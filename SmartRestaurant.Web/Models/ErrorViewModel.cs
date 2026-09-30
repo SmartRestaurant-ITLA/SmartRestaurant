@@ -1,4 +1,4 @@
-namespace SmartRestaurant.Models
+namespace SmartRestaurant.Web.Models
 {
     public class ErrorViewModel
     {

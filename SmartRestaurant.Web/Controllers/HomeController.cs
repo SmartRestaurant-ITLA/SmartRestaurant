@@ -1,8 +1,8 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SmartRestaurant.Models;
+using SmartRestaurant.Web.Models;
+using System.Diagnostics;
 
-namespace SmartRestaurant.Controllers
+namespace SmartRestaurant.Web.Controllers
 {
     public class HomeController : Controller
     {
