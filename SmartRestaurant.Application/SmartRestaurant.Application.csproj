@@ -11,9 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="DTOs\" />
-    <Folder Include="Services\" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.21" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.21" />
   </ItemGroup>
 
 </Project>

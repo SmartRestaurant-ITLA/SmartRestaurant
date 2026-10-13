@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace SmartRestaurant.Application
 {
-    public static class ServicesRegistration
+    public static class ServiceRegistration
     {
+        public static void AddApplicationLayerIoc(this IServiceCollection services)
+        {
+            
 
+            // Aquí registrarás los servicios de negocio conforme se vayan creando
+            // Ejemplo: services.AddTransient<IReservationService, ReservationService>();
+        }
     }
 }
