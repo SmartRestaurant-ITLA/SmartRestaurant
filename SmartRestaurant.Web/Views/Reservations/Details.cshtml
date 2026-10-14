@@ -1,0 +1,206 @@
+@model SmartRestaurant.Web.ViewModels.ReservationListItemViewModel
+
+@{
+    ViewData["Title"] = "Detalles de la reserva";
+
+    var controllerName =
+        ViewData["ReservationsController"]?.ToString()
+        ?? "Reservations";
+
+    var cancelada = string.Equals(
+        Model.Status, "Cancelada",
+        StringComparison.OrdinalIgnoreCase);
+
+    var pendiente = string.Equals(
+        Model.Status, "Pendiente",
+        StringComparison.OrdinalIgnoreCase);
+
+    var statusClass = cancelada
+        ? "sr-status-cancelled"
+        : pendiente
+            ? "sr-status-pending"
+            : "sr-status-confirmed";
+}
+
+<link rel="stylesheet"
+      href="@Url.Content("~/css/reservations.css")?v=6" />
+
+<section class="sr-page sr-create sr-details-page py-4">
+
+    <!-- ENCABEZADO -->
+    <div class="sr-header mb-4">
+        <div>
+            <p class="sr-eyebrow mb-2">
+                SMARTRESTAURANT / RESERVAS
+            </p>
+
+            <h1 class="sr-title">
+                Detalles de la reserva
+            </h1>
+
+            <p class="sr-subtitle mb-0">
+                Consulta la información de la reserva #@Model.Id.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Index"
+           class="btn sr-back-btn">
+            &larr; Volver a reservas
+        </a>
+    </div>
+
+    <div class="sr-details-grid">
+
+        <!-- PANEL DE INFORMACIÓN -->
+        <article class="sr-form-panel">
+
+            <div class="sr-panel-header">
+                <div>
+                    <h2>Información de la reserva</h2>
+                    <p>Datos registrados en el sistema.</p>
+                </div>
+
+                <span class="sr-status @statusClass">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div class="sr-panel-body">
+
+                <dl class="sr-detail-list">
+
+                    <div class="sr-detail-item">
+                        <dt>ID de reserva</dt>
+                        <dd>#@Model.Id</dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Nombre del cliente</dt>
+                        <dd>@Model.CustomerName</dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Fecha de reserva</dt>
+                        <dd>
+                            @Model.StartAt.ToString("dd/MM/yyyy")
+                        </dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Hora de inicio</dt>
+                        <dd>
+                            @Model.StartAt.ToString("HH:mm")
+                        </dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Hora de finalización</dt>
+                        <dd>
+                            @Model.EndAt.ToString("dd/MM/yyyy HH:mm")
+                        </dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Cantidad de personas</dt>
+                        <dd>@Model.PartySize personas</dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Duración</dt>
+                        <dd>@Model.DurationMinutes minutos</dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Mesa asignada</dt>
+                        <dd>Mesa @Model.TableNumber</dd>
+                    </div>
+
+                    <div class="sr-detail-item">
+                        <dt>Estado</dt>
+                        <dd>
+                            <span class="sr-status @statusClass">
+                                @Model.Status
+                            </span>
+                        </dd>
+                    </div>
+
+                </dl>
+
+                <div class="sr-form-divider"></div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    @if (!cancelada)
+                    {
+                        <a asp-controller="@controllerName"
+                           asp-action="Edit"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-primary sr-primary-btn">
+                            Editar reserva
+                        </a>
+                    }
+
+                    <a asp-controller="@controllerName"
+                       asp-action="Index"
+                       class="btn sr-back-btn">
+                        Volver al listado
+                    </a>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- PANEL LATERAL -->
+        <aside class="sr-details-side">
+
+            <div class="sr-form-panel">
+
+                <div class="sr-panel-header">
+                    <div>
+                        <h2>Resumen</h2>
+                        <p>Información principal.</p>
+                    </div>
+                </div>
+
+                <div class="sr-panel-body">
+
+                    <div class="sr-detail-highlight">
+                        <span>Mesa asignada</span>
+                        <strong>Mesa @Model.TableNumber</strong>
+                    </div>
+
+                    <div class="sr-summary-line">
+                        <span>Personas</span>
+                        <strong>@Model.PartySize</strong>
+                    </div>
+
+                    <div class="sr-summary-line">
+                        <span>Inicio</span>
+                        <strong>
+                            @Model.StartAt.ToString("dd/MM HH:mm")
+                        </strong>
+                    </div>
+
+                    <div class="sr-summary-line">
+                        <span>Duración</span>
+                        <strong>@Model.DurationMinutes min</strong>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="sr-information mt-3">
+                <strong>Información importante</strong>
+                <p>
+                    Si necesitas modificar la fecha,
+                    duración, cantidad de personas o
+                    mesa asignada, utiliza la opción
+                    Editar reserva.
+                </p>
+            </div>
+
+        </aside>
+
+    </div>
+
+</section>

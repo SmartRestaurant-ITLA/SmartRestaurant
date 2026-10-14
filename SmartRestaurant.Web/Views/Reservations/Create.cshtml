@@ -1,0 +1,496 @@
+@model SmartRestaurant.Web.ViewModels.CreateReservationViewModel
+
+@{
+    ViewData["Title"] = "Nueva reserva";
+
+    var controllerName =
+        ViewData["ReservationsController"]?.ToString()
+        ?? "Reservations";
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" />
+
+<link rel="stylesheet"
+        href="@Url.Content("~/css/reservations.css")?v=5" />
+
+<section class="sr-page sr-create py-4">
+
+    <!-- ENCABEZADO -->
+    <div class="sr-header mb-4">
+
+        <div>
+            <p class="sr-eyebrow mb-2">
+                SMARTRESTAURANT / RESERVAS
+            </p>
+
+            <h1 class="sr-title">Nueva reserva</h1>
+
+            <p class="sr-subtitle mb-0">
+                Completa los datos del cliente y
+                selecciona una mesa disponible.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Index"
+           class="btn sr-back-btn">
+            &larr; Volver a reservas
+        </a>
+    </div>
+
+    <!-- INDICADORES DEL PROCESO -->
+    <div class="sr-process mb-4">
+        <div class="sr-process-item">
+            <span class="sr-process-number">1</span>
+            <span>Datos de reserva</span>
+        </div>
+
+        <div class="sr-process-line"></div>
+
+        <div class="sr-process-item">
+            <span class="sr-process-number">2</span>
+            <span>Selección de mesa</span>
+        </div>
+
+        <div class="sr-process-line"></div>
+
+        <div class="sr-process-item">
+            <span class="sr-process-number">3</span>
+            <span>Confirmación</span>
+        </div>
+    </div>
+
+    <form asp-controller="@controllerName"
+          asp-action="Create"
+          method="post"
+          id="reservationForm">
+
+        <div asp-validation-summary="All"
+             class="alert alert-danger sr-validation-summary"
+             role="alert">
+        </div>
+
+        <div class="row g-4">
+
+            <!-- COLUMNA IZQUIERDA -->
+            <div class="col-lg-7">
+
+                <div class="sr-form-panel">
+
+                    <div class="sr-panel-header">
+                        <div>
+                            <h2>Datos de la reserva</h2>
+                            <p>Información del cliente y horario.</p>
+                        </div>
+
+                        <span class="sr-panel-number">01</span>
+                    </div>
+
+                    <div class="sr-panel-body">
+
+                        <!-- CLIENTE -->
+                        <div class="mb-4">
+                            <label asp-for="CustomerName"
+                                   class="sr-field-label">
+                            </label>
+
+                            <span class="sr-required">*</span>
+
+                            <input asp-for="CustomerName"
+                                   class="form-control sr-control"
+                                   placeholder="Ej. Juan Pérez"
+                                   autocomplete="name" />
+
+                            <span asp-validation-for="CustomerName"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <!-- FECHA Y HORA -->
+                        <div class="mb-4">
+                            <label asp-for="StartAt"
+                                   class="sr-field-label">
+                            </label>
+
+                            <span class="sr-required">*</span>
+
+                            <input asp-for="StartAt"
+                                   type="datetime-local"
+                                   class="form-control sr-control sr-date-input"
+                                   step="900" />
+
+                            <span asp-validation-for="StartAt"
+                                  class="text-danger small">
+                            </span>
+
+                            <p class="sr-field-help">
+                                Selecciona la fecha y hora de llegada.
+                            </p>
+                        </div>
+
+                        <!-- PERSONAS Y DURACIÓN -->
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label asp-for="PartySize"
+                                       class="sr-field-label">
+                                </label>
+
+                                <span class="sr-required">*</span>
+
+                                <input asp-for="PartySize"
+                                       type="number"
+                                       min="1"
+                                       class="form-control sr-control" />
+
+                                <span asp-validation-for="PartySize"
+                                      class="text-danger small">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DurationMinutes"
+                                       class="sr-field-label">
+                                </label>
+
+                                <span class="sr-required">*</span>
+
+                                <input asp-for="DurationMinutes"
+                                       type="number"
+                                       min="1"
+                                       class="form-control sr-control" />
+
+                                <span asp-validation-for="DurationMinutes"
+                                      class="text-danger small">
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- DURACIONES RÁPIDAS -->
+                        <div class="sr-duration-section mt-3">
+                            <p class="sr-field-help mb-2">
+                                Duraciones frecuentes
+                            </p>
+
+                            <div class="sr-duration-options">
+                                <button type="button"
+                                        class="sr-duration-chip"
+                                        data-minutes="60">
+                                    1 hora
+                                </button>
+
+                                <button type="button"
+                                        class="sr-duration-chip"
+                                        data-minutes="90">
+                                    1 h 30 min
+                                </button>
+
+                                <button type="button"
+                                        class="sr-duration-chip"
+                                        data-minutes="120">
+                                    2 horas
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="sr-form-divider"></div>
+
+                        <div class="sr-information">
+                            <strong>Información</strong>
+
+                            <p>
+                                La disponibilidad depende del
+                                horario, la cantidad de personas
+                                y la duración de la reserva.
+                            </p>
+                        </div>
+
+                        <!-- BUSCAR MESAS -->
+                        <button type="submit"
+                                name="command"
+                                value="suggest"
+                                class="btn btn-primary sr-primary-btn w-100 mt-4">
+                            Buscar mesas disponibles
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA -->
+            <div class="col-lg-5">
+
+                <div class="sr-form-panel sr-table-panel">
+
+                    <div class="sr-panel-header">
+                        <div>
+                            <h2>Selección de mesa</h2>
+                            <p>Elige dónde se sentará el cliente.</p>
+                        </div>
+
+                        <span class="sr-panel-number">02</span>
+                    </div>
+
+                    <div class="sr-panel-body">
+
+                        <!-- MESA SUGERIDA -->
+                        @if (Model.SuggestedTableId.HasValue)
+                        {
+                            <div class="sr-suggestion">
+                                <div class="sr-suggestion-heading">
+                                    <span class="sr-suggestion-dot"></span>
+                                    Mesa recomendada
+                                </div>
+
+                                <strong>
+                                    @Model.SuggestedTableDescription
+                                </strong>
+
+                                <p>
+                                    Puedes aceptar esta mesa o
+                                    seleccionar otra disponible.
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="sr-suggestion-empty">
+                                <div class="sr-suggestion-placeholder">
+                                    <span>⌕</span>
+                                </div>
+
+                                <strong>
+                                    ¿Qué mesa te recomendamos?
+                                </strong>
+
+                                <p>
+                                    Pulsa "Buscar mesas disponibles"
+                                    para obtener una sugerencia.
+                                </p>
+                            </div>
+                        }
+
+                        <!-- OPCIONES DE MESAS -->
+                        <div class="sr-table-list-header">
+                            <h3>Mesas disponibles</h3>
+                            <span>
+                                @Model.AvailableTables.Count opciones
+                            </span>
+                        </div>
+
+                        <div class="sr-table-options">
+
+                            @if (Model.AvailableTables.Count > 0)
+                            {
+                                @foreach (var mesa in Model.AvailableTables)
+                                {
+                                    var selected =
+                                        Model.TableId?.ToString()
+                                        == mesa.Value;
+
+                                    <label class="sr-table-option">
+
+                                        <input type="radio"
+                                               name="TableId"
+                                               value="@mesa.Value"
+                                               checked="@selected"
+                                               disabled="@mesa.Disabled"
+                                               data-label="@mesa.Text" />
+
+                                        <span class="sr-table-option-body">
+                                            <span class="sr-table-option-name">
+                                                @mesa.Text
+                                            </span>
+
+                                            <span class="sr-table-option-check">
+                                                ✓
+                                            </span>
+                                        </span>
+                                    </label>
+                                }
+                            }
+                            else
+                            {
+                                <div class="sr-no-tables">
+                                    No hay mesas compatibles
+                                    para los datos consultados.
+                                </div>
+                            }
+                        </div>
+
+                        <span asp-validation-for="TableId"
+                              class="text-danger small">
+                        </span>
+
+                        <p id="availabilityChanged"
+                           class="sr-warning-note mt-3"
+                           hidden>
+                            Cambiaste los datos de la reserva.
+                            Vuelve a buscar mesas para actualizar
+                            las opciones.
+                        </p>
+
+                        <div class="sr-form-divider"></div>
+
+                        <div class="sr-selected-summary">
+                            <span>Mesa seleccionada</span>
+
+                            <strong id="selectedTableText">
+                                Ninguna mesa seleccionada
+                            </strong>
+                        </div>
+
+                        <p class="sr-field-help mt-3">
+                            La disponibilidad se verificará
+                            nuevamente antes de guardar.
+                        </p>
+
+                        <button type="submit"
+                                name="command"
+                                value="confirm"
+                                class="btn btn-primary sr-primary-btn w-100 mt-3">
+                            Confirmar reserva
+                        </button>
+
+                        <a asp-controller="@controllerName"
+                           asp-action="Index"
+                           class="btn sr-cancel-btn w-100 mt-2">
+                            Cancelar
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const dateInput =
+                document.getElementById("StartAt");
+
+            const partyInput =
+                document.getElementById("PartySize");
+
+            const durationInput =
+                document.getElementById("DurationMinutes");
+
+            const warning =
+                document.getElementById("availabilityChanged");
+
+            // Avisar cuando se modifiquen los datos
+            function markAvailabilityChanged() {
+                if (warning) {
+                    warning.hidden = false;
+                }
+            }
+
+            // Calendario y hora en español
+            if (typeof flatpickr !== "undefined" && dateInput) {
+                flatpickr(dateInput, {
+                    enableTime: true,
+                    time_24hr: true,
+                    dateFormat: "Y-m-d\\TH:i",
+                    altInput: true,
+                    altInputClass: "form-control sr-control sr-date-input",
+                    altFormat: "j F Y · H:i",
+                    locale: "es",
+                    minuteIncrement: 15,
+                    minDate: "today",
+                    disableMobile: true,
+                    onChange: function () {
+                        markAvailabilityChanged();
+                    }
+                });
+            }
+
+            // Botones rápidos para la duración
+            const durationButtons =
+                document.querySelectorAll(".sr-duration-chip");
+
+            function updateDurationButtons() {
+                durationButtons.forEach(function (button) {
+                    const active =
+                        button.dataset.minutes === durationInput.value;
+
+                    button.classList.toggle("is-active", active);
+                    button.setAttribute("aria-pressed", String(active));
+                });
+            }
+
+            durationButtons.forEach(function (button) {
+                button.addEventListener("click", function () {
+                    durationInput.value = button.dataset.minutes;
+
+                    updateDurationButtons();
+                    markAvailabilityChanged();
+                });
+            });
+
+            if (durationInput) {
+                durationInput.addEventListener("input", function () {
+                    updateDurationButtons();
+                    markAvailabilityChanged();
+                });
+
+                updateDurationButtons();
+            }
+
+            if (partyInput) {
+                partyInput.addEventListener(
+                    "input",
+                    markAvailabilityChanged
+                );
+            }
+
+            if (dateInput) {
+                dateInput.addEventListener(
+                    "change",
+                    markAvailabilityChanged
+                );
+            }
+
+            // Actualizar el resumen de mesa seleccionada
+            const tableRadios =
+                document.querySelectorAll("input[name='TableId']");
+
+            const selectedTableText =
+                document.getElementById("selectedTableText");
+
+            function updateSelectedTable() {
+                const selected =
+                    document.querySelector(
+                        "input[name='TableId']:checked"
+                    );
+
+                if (!selectedTableText) return;
+
+                selectedTableText.textContent = selected
+                    ? selected.dataset.label
+                    : "Ninguna mesa seleccionada";
+            }
+
+            tableRadios.forEach(function (radio) {
+                radio.addEventListener(
+                    "change",
+                    updateSelectedTable
+                );
+            });
+
+            updateSelectedTable();
+        });
+    </script>
+}
