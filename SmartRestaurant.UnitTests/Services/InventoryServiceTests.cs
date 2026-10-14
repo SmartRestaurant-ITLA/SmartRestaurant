@@ -18,7 +18,7 @@ public class InventoryServiceTests
     {
         // AutoMapper con los mismos Profiles de la aplicación
         var config = new MapperConfiguration(
-            cfg => cfg.AddMaps(typeof(SmartRestaurant.Application.ServicesRegistration).Assembly),
+           cfg => cfg.AddMaps(typeof(SmartRestaurant.Application.ServiceRegistration).Assembly),
             NullLoggerFactory.Instance);
 
         var mapper = config.CreateMapper();
