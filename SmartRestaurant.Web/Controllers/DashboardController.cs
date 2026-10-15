@@ -22,6 +22,7 @@ public class DashboardController : Controller
         var model = new DashboardViewModel
         {
             Inventory = summary.Inventory,
+            Sales = summary.Sales,
             GeneratedAt = DateTime.Now
         };
 

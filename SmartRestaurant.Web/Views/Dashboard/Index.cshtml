@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Dashboard";
     var inv = Model.Inventory;
+    var sales = Model.Sales;
 }
 
 <div class="mb-4">
@@ -79,24 +80,52 @@ else
     </div>
 }
 
+<h2 class="h5 mb-3">Ventas de hoy</h2>
+@if (sales.TodayUnits == 0)
+{
+    <div class="alert alert-light border mb-4">
+        A&uacute;n no hay ventas registradas hoy.
+        <a asp-controller="Sales" asp-action="Create">Registrar una venta</a>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">Unidades vendidas</div>
+                <div class="display-6">@sales.TodayUnits</div>
+            </div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">Productos distintos</div>
+                <div class="display-6">@sales.TodayProductsCount</div>
+            </div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">M&aacute;s vendido</div>
+                <div class="fs-4">@sales.TopProductName</div>
+                <div class="text-muted small">@sales.TopProductUnits unidades</div>
+            </div></div>
+        </div>
+    </div>
+    <a asp-controller="Sales" asp-action="Index" asp-route-date="@DateTime.Today.ToString("yyyy-MM-dd")" class="btn btn-sm btn-outline-primary mb-4">Ver ventas de hoy</a>
+}
+
 <h2 class="h5 mb-3">Otros m&oacute;dulos</h2>
 <div class="row g-3">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card h-100"><div class="card-body">
             <div class="text-muted small">Reservas</div>
             <div class="text-muted">Sin datos: m&oacute;dulo pendiente de integraci&oacute;n.</div>
         </div></div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card h-100"><div class="card-body">
             <div class="text-muted small">Mesas</div>
             <div class="text-muted">Sin datos: m&oacute;dulo pendiente de integraci&oacute;n.</div>
-        </div></div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100"><div class="card-body">
-            <div class="text-muted small">Ventas de hoy</div>
-            <div class="text-muted">Sin datos: m&oacute;dulo en desarrollo.</div>
         </div></div>
     </div>
 </div>
