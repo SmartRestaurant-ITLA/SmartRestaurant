@@ -17,6 +17,7 @@ namespace SmartRestaurant.Application
             // Ejemplo: services.AddTransient<IReservationService, ReservationService>();
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IDailySaleService, DailySaleService>();
         }
     }
 }
