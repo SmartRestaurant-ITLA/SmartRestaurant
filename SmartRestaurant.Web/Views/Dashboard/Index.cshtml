@@ -1,0 +1,102 @@
+﻿@model SmartRestaurant.Web.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var inv = Model.Inventory;
+}
+
+<div class="mb-4">
+    <h1 class="h3 mb-0">Dashboard</h1>
+    <small class="text-muted">Actualizado: @Model.GeneratedAt.ToString("dd/MM/yyyy HH:mm")</small>
+</div>
+
+<h2 class="h5 mb-3">Inventario</h2>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Insumos activos</div>
+            <div class="display-6">@inv.TotalItems</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Stock bajo</div>
+            <div class="display-6 @(inv.LowStockCount > 0 ? "text-warning" : "")">@inv.LowStockCount</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Por vencer (3 d&iacute;as)</div>
+            <div class="display-6 @(inv.NearExpirationCount > 0 ? "text-warning" : "")">@inv.NearExpirationCount</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Vencidos</div>
+            <div class="display-6 @(inv.ExpiredCount > 0 ? "text-danger" : "")">@inv.ExpiredCount</div>
+        </div></div>
+    </div>
+</div>
+
+@if (inv.TotalItems == 0)
+{
+    <div class="alert alert-light border">A&uacute;n no hay insumos registrados.</div>
+}
+else if (!inv.AlertItems.Any())
+{
+    <div class="alert alert-success">No hay alertas de inventario.</div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header">Insumos que requieren atenci&oacute;n</div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Insumo</th>
+                        <th class="text-end">Stock / M&iacute;nimo</th>
+                        <th>Vence</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in inv.AlertItems)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td class="text-end">@item.CurrentStock.ToString("0.##") / @item.MinimumStock.ToString("0.##")</td>
+                            <td>@(item.ExpirationDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                            <td>
+                                @if (item.IsExpired) { <span class="badge bg-danger">Vencido</span> }
+                                @if (item.IsNearExpiration) { <span class="badge bg-warning text-dark">Por vencer</span> }
+                                @if (item.IsLowStock) { <span class="badge bg-warning text-dark">Stock bajo</span> }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<h2 class="h5 mb-3">Otros m&oacute;dulos</h2>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Reservas</div>
+            <div class="text-muted">Sin datos: m&oacute;dulo pendiente de integraci&oacute;n.</div>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Mesas</div>
+            <div class="text-muted">Sin datos: m&oacute;dulo pendiente de integraci&oacute;n.</div>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Ventas de hoy</div>
+            <div class="text-muted">Sin datos: m&oacute;dulo en desarrollo.</div>
+        </div></div>
+    </div>
+</div>
