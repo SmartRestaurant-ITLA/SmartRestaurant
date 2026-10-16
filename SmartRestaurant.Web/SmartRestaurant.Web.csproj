@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SmartRestaurant.Application\SmartRestaurant.Application.csproj" />
+    <ProjectReference Include="..\SmartRestaurant.Infrastructure\SmartRestaurant.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

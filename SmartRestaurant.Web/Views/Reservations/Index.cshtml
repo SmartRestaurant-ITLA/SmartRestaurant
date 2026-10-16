@@ -1,0 +1,331 @@
+@using SmartRestaurant.Web.ViewModels
+@model IEnumerable<ReservationListItemViewModel>
+
+@{
+    ViewData["Title"] = "Gestión de Reservas";
+
+    var controllerName =
+        ViewData["ReservationsController"]?.ToString()
+        ?? "Reservations";
+
+    var reservas = Model?
+        .OrderByDescending(r => r.StartAt)
+        .ToList()
+        ?? new List<ReservationListItemViewModel>();
+
+    var total = reservas.Count;
+
+    var confirmadas = reservas.Count(r =>
+        string.Equals(r.Status, "Confirmada",
+            StringComparison.OrdinalIgnoreCase));
+
+    var canceladas = reservas.Count(r =>
+        string.Equals(r.Status, "Cancelada",
+            StringComparison.OrdinalIgnoreCase));
+
+    var pendientes = reservas.Count(r =>
+        string.Equals(r.Status, "Pendiente",
+            StringComparison.OrdinalIgnoreCase));
+}
+
+<link rel="stylesheet"
+      href="~/css/reservations.css"
+      asp-append-version="true" />
+
+<section class="sr-page py-4">
+
+    <!-- Encabezado -->
+    <div class="sr-header mb-4">
+
+        <div>
+            <p class="sr-eyebrow mb-2">
+                SMARTRESTAURANT / ADMINISTRACIÓN
+            </p>
+
+            <h1 class="sr-title">Reservas</h1>
+
+            <p class="sr-subtitle mb-0">
+                Gestiona las reservas y consulta la
+                disponibilidad de las mesas.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Create"
+           class="btn btn-primary sr-primary-btn">
+            <span aria-hidden="true">＋</span>
+            Nueva reserva
+        </a>
+    </div>
+
+    <!-- Mensaje de confirmación -->
+    @if (TempData["Success"] is string mensaje)
+    {
+        <div class="alert alert-success sr-alert"
+             role="status">
+            @mensaje
+        </div>
+    }
+
+    <!-- Tarjetas de resumen -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Total de reservas</span>
+                    <span class="sr-stat-icon sr-blue">
+                        #
+                    </span>
+                </div>
+
+                <h2>@total</h2>
+                <p>Reservas registradas</p>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Confirmadas</span>
+                    <span class="sr-stat-icon sr-green">
+                        ✓
+                    </span>
+                </div>
+
+                <h2>@confirmadas</h2>
+                <p>Reservas confirmadas</p>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Pendientes</span>
+                    <span class="sr-stat-icon sr-orange">
+                        ◷
+                    </span>
+                </div>
+
+                <h2>@pendientes</h2>
+                <p>Pendientes de confirmación</p>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Canceladas</span>
+                    <span class="sr-stat-icon sr-red">
+                        ×
+                    </span>
+                </div>
+
+                <h2>@canceladas</h2>
+                <p>Reservas canceladas</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Listado principal -->
+    <div class="sr-card">
+
+        <div class="sr-card-header">
+            <div>
+                <h2>Listado de reservas</h2>
+                <p>Información de las reservas registradas.</p>
+            </div>
+
+            <div class="sr-search">
+                <label for="buscarReserva"
+                       class="visually-hidden">
+                    Buscar reserva
+                </label>
+
+                <input type="search"
+                       id="buscarReserva"
+                       class="form-control"
+                       placeholder="Buscar cliente o mesa..."
+                       autocomplete="off" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table sr-table mb-0">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Fecha y hora</th>
+                        <th>Personas</th>
+                        <th>Mesa</th>
+                        <th>Duración</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaReservas">
+
+                    @if (reservas.Any())
+                    {
+                        @foreach (var reserva in reservas)
+                        {
+                            var cancelada = string.Equals(
+                                reserva.Status, "Cancelada",
+                                StringComparison.OrdinalIgnoreCase);
+
+                            var pendiente = string.Equals(
+                                reserva.Status, "Pendiente",
+                                StringComparison.OrdinalIgnoreCase);
+
+                            var estadoClase = cancelada
+                                ? "sr-status-cancelled"
+                                : pendiente
+                                    ? "sr-status-pending"
+                                    : "sr-status-confirmed";
+
+                            <tr class="sr-reservation-row"
+                                data-search="@($"{reserva.CustomerName} mesa {reserva.TableNumber} {reserva.Status}".ToLowerInvariant())">
+
+                                <td class="sr-id">
+                                    #@reserva.Id
+                                </td>
+
+                                <td>
+                                    <span class="sr-client">
+                                        @reserva.CustomerName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="sr-date">
+                                        @reserva.StartAt.ToString("dd/MM/yyyy")
+                                    </div>
+
+                                    <small class="sr-time">
+                                        @reserva.StartAt.ToString("HH:mm")
+                                    </small>
+                                </td>
+
+                                <td>@reserva.PartySize</td>
+
+                                <td>
+                                    <span class="sr-table-number">
+                                        Mesa @reserva.TableNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @reserva.DurationMinutes min
+                                </td>
+
+                                <td>
+                                    <span class="sr-status @estadoClase">
+                                        @reserva.Status
+                                    </span>
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="sr-actions">
+
+                                        <a asp-controller="@controllerName"
+                                           asp-action="Details"
+                                           asp-route-id="@reserva.Id"
+                                           class="sr-action"
+                                           title="Ver reserva">
+                                            Ver
+                                        </a>
+
+                                        @if (!cancelada)
+                                        {
+                                            <a asp-controller="@controllerName"
+                                               asp-action="Edit"
+                                               asp-route-id="@reserva.Id"
+                                               class="sr-action"
+                                               title="Editar reserva">
+                                                Editar
+                                            </a>
+                                        }
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="sr-empty">
+                                <div class="sr-empty-content">
+                                    <h3>No hay reservas registradas</h3>
+
+                                    <p>
+                                        Crea una reserva para comenzar
+                                        a gestionar tus mesas.
+                                    </p>
+
+                                    <a asp-controller="@controllerName"
+                                       asp-action="Create"
+                                       class="btn btn-outline-primary">
+                                        Crear reserva
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    <tr id="sinResultados" class="d-none">
+                        <td colspan="8" class="sr-empty">
+                            No se encontraron reservas
+                            con esa búsqueda.
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sr-card-footer">
+            <span>
+                Total registrado:
+                <strong>@total</strong>
+            </span>
+        </div>
+
+    </div>
+
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const buscador = document.getElementById("buscarReserva");
+            const filas = document.querySelectorAll(".sr-reservation-row");
+            const sinResultados = document.getElementById("sinResultados");
+
+            if (!buscador) return;
+
+            buscador.addEventListener("input", function () {
+                const texto = buscador.value.trim().toLowerCase();
+                let visibles = 0;
+
+                filas.forEach(function (fila) {
+                    const contenido = fila.dataset.search || "";
+                    const coincide = contenido.includes(texto);
+
+                    fila.classList.toggle("d-none", !coincide);
+
+                    if (coincide) visibles++;
+                });
+
+                sinResultados.classList.toggle(
+                    "d-none",
+                    visibles > 0 || filas.length === 0
+                );
+            });
+        });
+    </script>
+}
