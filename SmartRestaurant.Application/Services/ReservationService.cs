@@ -1,4 +1,4 @@
-using SmartRestaurant.Application.Interfaces;
+using SmartRestaurant.Application.Interfaces.Repositories;
 using SmartRestaurant.Domain.Entities;
 using SmartRestaurant.Domain.Enums;
 
