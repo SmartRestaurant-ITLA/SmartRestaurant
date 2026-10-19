@@ -1,5 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartRestaurant.Application.Interfaces;
+using SmartRestaurant.Infrastructure.Contexts;
+using SmartRestaurant.Infrastructure.Repositories;
 
 
 namespace SmartRestaurant.Infrastructure
@@ -8,7 +12,10 @@ namespace SmartRestaurant.Infrastructure
     {
         public static void AddPersistenceLayerIoc(this IServiceCollection services, IConfiguration configuration)
         {
-           
+            services.AddDbContext<SmartRestaurantDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddScoped<IReservationRepository, ReservationRepository>();
         }
     }
 }

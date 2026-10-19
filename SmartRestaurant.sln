@@ -9,15 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRestaurant.Domain", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRestaurant.Infrastructure", "SmartRestaurant.Infrastructure\SmartRestaurant.Infrastructure.csproj", "{741525D1-B9F2-4196-8EEC-9E49E7D20449}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRestaurant.UnitTests", "SmartRestaurant.UnitTests\SmartRestaurant.UnitTests.csproj", "{4663A2C4-2005-42FF-942F-E37C99540366}"
-EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		copilot-instructions.md = copilot-instructions.md
 	EndProjectSection
 EndProject
-
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRestaurant.Web", "SmartRestaurant.Web\SmartRestaurant.Web.csproj", "{45563293-3328-ECDD-37C6-F2E19EC5D2B0}"
 EndProject
 Global
@@ -38,10 +34,6 @@ Global
 		{741525D1-B9F2-4196-8EEC-9E49E7D20449}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{741525D1-B9F2-4196-8EEC-9E49E7D20449}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{741525D1-B9F2-4196-8EEC-9E49E7D20449}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4663A2C4-2005-42FF-942F-E37C99540366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4663A2C4-2005-42FF-942F-E37C99540366}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4663A2C4-2005-42FF-942F-E37C99540366}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4663A2C4-2005-42FF-942F-E37C99540366}.Release|Any CPU.Build.0 = Release|Any CPU
 		{45563293-3328-ECDD-37C6-F2E19EC5D2B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{45563293-3328-ECDD-37C6-F2E19EC5D2B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45563293-3328-ECDD-37C6-F2E19EC5D2B0}.Release|Any CPU.ActiveCfg = Release|Any CPU

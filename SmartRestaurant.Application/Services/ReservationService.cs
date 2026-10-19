@@ -6,11 +6,26 @@ namespace SmartRestaurant.Application.Services
 {
     public class ReservationService
     {
-        private readonly IReservationStore _store;
+        private readonly IReservationRepository _repository;
 
-        public ReservationService(IReservationStore store)
+        public ReservationService(IReservationRepository repository)
         {
-            _store = store ?? throw new ArgumentNullException(nameof(store));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        }
+
+        public IReadOnlyCollection<Table> GetTables()
+        {
+            return _repository.GetTables();
+        }
+
+        public IReadOnlyCollection<Reservation> GetReservations()
+        {
+            return _repository.GetReservations();
+        }
+
+        public Reservation? GetReservation(int id)
+        {
+            return _repository.GetReservation(id);
         }
 
         public IReadOnlyCollection<Table> GetAvailableTables(
@@ -21,9 +36,9 @@ namespace SmartRestaurant.Application.Services
         {
             ValidateReservationDetails(durationMinutes, partySize);
             var endAt = startAt.AddMinutes(durationMinutes);
-            var reservations = _store.GetReservations();
+            var reservations = _repository.GetReservations();
 
-            return _store.GetTables()
+            return _repository.GetTables()
                 .Where(table => table.IsActive && table.Capacity >= partySize)
                 .Where(table => !reservations.Any(reservation =>
                     reservation.Id != excludedReservationId &&
@@ -45,7 +60,7 @@ namespace SmartRestaurant.Application.Services
             ValidateReservationDetails(durationMinutes, partySize);
 
             var existing = reservationId.HasValue
-                ? _store.GetReservation(reservationId.Value)
+                ? _repository.GetReservation(reservationId.Value)
                     ?? throw new KeyNotFoundException($"No existe la reserva {reservationId.Value}.")
                 : null;
 
@@ -53,7 +68,7 @@ namespace SmartRestaurant.Application.Services
 
             if (existing is null)
             {
-                return _store.SaveReservation(new Reservation(
+                return _repository.SaveReservation(new Reservation(
                     customerName,
                     startAt,
                     durationMinutes,
@@ -62,12 +77,12 @@ namespace SmartRestaurant.Application.Services
             }
 
             existing.UpdateDetails(customerName, startAt, durationMinutes, partySize, tableId);
-            return _store.SaveReservation(existing);
+            return _repository.SaveReservation(existing);
         }
 
         public Reservation ConfirmReservation(int reservationId)
         {
-            var reservation = _store.GetReservation(reservationId)
+            var reservation = _repository.GetReservation(reservationId)
                 ?? throw new KeyNotFoundException($"No existe la reserva {reservationId}.");
 
             ValidateTableAvailability(
@@ -78,7 +93,7 @@ namespace SmartRestaurant.Application.Services
                 reservation.Id);
 
             reservation.ChangeStatus(ReservationStatus.Confirmed);
-            return _store.SaveReservation(reservation);
+            return _repository.SaveReservation(reservation);
         }
 
         private void ValidateTableAvailability(
@@ -88,7 +103,7 @@ namespace SmartRestaurant.Application.Services
             int partySize,
             int? excludedReservationId)
         {
-            var table = _store.GetTables().FirstOrDefault(candidate => candidate.Id == tableId)
+            var table = _repository.GetTables().FirstOrDefault(candidate => candidate.Id == tableId)
                 ?? throw new KeyNotFoundException($"No existe la mesa {tableId}.");
 
             if (!table.IsActive)

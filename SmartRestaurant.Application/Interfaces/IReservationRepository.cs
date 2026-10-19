@@ -2,7 +2,7 @@ using SmartRestaurant.Domain.Entities;
 
 namespace SmartRestaurant.Application.Interfaces
 {
-    public interface IReservationStore
+    public interface IReservationRepository
     {
         IReadOnlyCollection<Table> GetTables();
 

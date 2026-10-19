@@ -1,6 +1,6 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using SmartRestaurant.Application.Interfaces;
 using SmartRestaurant.Application.Services;
 using SmartRestaurant.Domain.Entities;
 using SmartRestaurant.Domain.Enums;
@@ -11,25 +11,23 @@ namespace SmartRestaurant.Web.Controllers
     public class ReservationsController : Controller
     {
         private readonly ReservationService _reservationService;
-        private readonly IReservationStore _reservationStore;
 
         public ReservationsController(
-            ReservationService reservationService,
-            IReservationStore reservationStore)
+            ReservationService reservationService)
         {
             _reservationService = reservationService;
-            _reservationStore = reservationStore;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            var tables = _reservationStore.GetTables()
+            var tables = _reservationService.GetTables()
                 .ToDictionary(table => table.Id);
 
-            var reservations = _reservationStore.GetReservations()
+            var reservations = _reservationService.GetReservations()
                 .OrderByDescending(reservation => reservation.StartAt)
-                .Select(reservation => ToListItemViewModel(reservation, tables))
+                .Select(reservation =>
+                    ToListItemViewModel(reservation, tables))
                 .ToList();
 
             return View(reservations);
@@ -44,20 +42,27 @@ namespace SmartRestaurant.Web.Controllers
             };
 
             ReloadAvailableTables(model, null, false);
+
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CreateReservationViewModel model, string command)
+        public IActionResult Create(
+            CreateReservationViewModel model,
+            string command)
         {
-            if (string.Equals(command, "suggest", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(
+                command, "suggest",
+                StringComparison.OrdinalIgnoreCase))
             {
                 ReloadAvailableTables(model, null, true);
                 return View(model);
             }
 
-            if (!string.Equals(command, "confirm", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(
+                command, "confirm",
+                StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest();
             }
@@ -70,7 +75,10 @@ namespace SmartRestaurant.Web.Controllers
 
             if (!model.TableId.HasValue)
             {
-                ModelState.AddModelError(nameof(model.TableId), "Selecciona una mesa disponible.");
+                ModelState.AddModelError(
+                    nameof(model.TableId),
+                    "Selecciona una mesa disponible.");
+
                 ReloadAvailableTables(model, null, true);
                 return View(model);
             }
@@ -84,13 +92,22 @@ namespace SmartRestaurant.Web.Controllers
                     model.PartySize,
                     model.TableId.Value);
 
-                reservation = _reservationService.ConfirmReservation(reservation.Id);
-                TempData["Success"] = "La reserva se confirmó correctamente.";
-                return RedirectToAction(nameof(Details), new { id = reservation.Id });
+                reservation = _reservationService
+                    .ConfirmReservation(reservation.Id);
+
+                TempData["Success"] =
+                    "La reserva se confirmó correctamente.";
+
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id = reservation.Id });
             }
-            catch (Exception exception) when (IsReservationValidationException(exception))
+            catch (Exception exception)
+                when (IsReservationValidationException(exception))
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                ModelState.AddModelError(
+                    string.Empty, exception.Message);
+
                 ReloadAvailableTables(model, null, true);
                 return View(model);
             }
@@ -99,13 +116,14 @@ namespace SmartRestaurant.Web.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            var reservation = _reservationStore.GetReservation(id);
+            var reservation = _reservationService.GetReservation(id);
+
             if (reservation is null)
             {
                 return NotFound();
             }
 
-            var tables = _reservationStore.GetTables()
+            var tables = _reservationService.GetTables()
                 .ToDictionary(table => table.Id);
 
             return View(ToListItemViewModel(reservation, tables));
@@ -114,7 +132,8 @@ namespace SmartRestaurant.Web.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var reservation = _reservationStore.GetReservation(id);
+            var reservation = _reservationService.GetReservation(id);
+
             if (reservation is null)
             {
                 return NotFound();
@@ -131,26 +150,35 @@ namespace SmartRestaurant.Web.Controllers
             };
 
             ReloadAvailableTables(model, reservation.Id, false);
+
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(EditReservationViewModel model, string command)
+        public IActionResult Edit(
+            EditReservationViewModel model,
+            string command)
         {
-            var reservation = _reservationStore.GetReservation(model.Id);
+            var reservation =
+                _reservationService.GetReservation(model.Id);
+
             if (reservation is null)
             {
                 return NotFound();
             }
 
-            if (string.Equals(command, "suggest", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(
+                command, "suggest",
+                StringComparison.OrdinalIgnoreCase))
             {
                 ReloadAvailableTables(model, model.Id, true);
                 return View(model);
             }
 
-            if (!string.Equals(command, "save", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(
+                command, "save",
+                StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest();
             }
@@ -163,27 +191,38 @@ namespace SmartRestaurant.Web.Controllers
 
             if (!model.TableId.HasValue)
             {
-                ModelState.AddModelError(nameof(model.TableId), "Selecciona una mesa disponible.");
+                ModelState.AddModelError(
+                    nameof(model.TableId),
+                    "Selecciona una mesa disponible.");
+
                 ReloadAvailableTables(model, model.Id, true);
                 return View(model);
             }
 
             try
             {
-                var updatedReservation = _reservationService.SaveReservation(
-                    model.CustomerName,
-                    model.StartAt,
-                    model.DurationMinutes,
-                    model.PartySize,
-                    model.TableId.Value,
-                    model.Id);
+                var updatedReservation =
+                    _reservationService.SaveReservation(
+                        model.CustomerName,
+                        model.StartAt,
+                        model.DurationMinutes,
+                        model.PartySize,
+                        model.TableId.Value,
+                        model.Id);
 
-                TempData["Success"] = "Los cambios de la reserva se guardaron correctamente.";
-                return RedirectToAction(nameof(Details), new { id = updatedReservation.Id });
+                TempData["Success"] =
+                    "Los cambios de la reserva se guardaron correctamente.";
+
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id = updatedReservation.Id });
             }
-            catch (Exception exception) when (IsReservationValidationException(exception))
+            catch (Exception exception)
+                when (IsReservationValidationException(exception))
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                ModelState.AddModelError(
+                    string.Empty, exception.Message);
+
                 ReloadAvailableTables(model, model.Id, true);
                 return View(model);
             }
@@ -196,7 +235,8 @@ namespace SmartRestaurant.Web.Controllers
         {
             model.AvailableTables = [];
 
-            if (model.DurationMinutes <= 0 || model.PartySize <= 0)
+            if (model.DurationMinutes <= 0 ||
+                model.PartySize <= 0)
             {
                 model.SuggestedTableId = null;
                 model.SuggestedTableDescription = null;
@@ -205,11 +245,12 @@ namespace SmartRestaurant.Web.Controllers
 
             try
             {
-                var availableTables = _reservationService.GetAvailableTables(
-                    model.StartAt,
-                    model.DurationMinutes,
-                    model.PartySize,
-                    excludedReservationId);
+                var availableTables =
+                    _reservationService.GetAvailableTables(
+                        model.StartAt,
+                        model.DurationMinutes,
+                        model.PartySize,
+                        excludedReservationId);
 
                 model.AvailableTables = availableTables
                     .Select(table => new SelectListItem(
@@ -224,10 +265,13 @@ namespace SmartRestaurant.Web.Controllers
                 }
 
                 var suggestion = availableTables.FirstOrDefault();
+
                 model.SuggestedTableId = suggestion?.Id;
+
                 model.SuggestedTableDescription = suggestion is null
                     ? null
                     : $"Mesa {suggestion.Number} · capacidad {suggestion.Capacity}";
+
                 model.TableId = suggestion?.Id;
             }
             catch (ArgumentOutOfRangeException)
@@ -238,13 +282,69 @@ namespace SmartRestaurant.Web.Controllers
             }
         }
 
-        private static ReservationListItemViewModel ToListItemViewModel(
-            Reservation reservation,
-            IReadOnlyDictionary<int, Table> tables)
+        private void ReloadAvailableTables(
+            EditReservationViewModel model,
+            int? excludedReservationId,
+            bool suggestTable)
         {
-            var tableNumber = tables.TryGetValue(reservation.TableId, out var table)
-                ? table.Number
-                : reservation.TableId;
+            model.AvailableTables = [];
+
+            if (model.DurationMinutes <= 0 ||
+                model.PartySize <= 0)
+            {
+                model.SuggestedTableId = null;
+                model.SuggestedTableDescription = null;
+                return;
+            }
+
+            try
+            {
+                var availableTables =
+                    _reservationService.GetAvailableTables(
+                        model.StartAt,
+                        model.DurationMinutes,
+                        model.PartySize,
+                        excludedReservationId);
+
+                model.AvailableTables = availableTables
+                    .Select(table => new SelectListItem(
+                        $"Mesa {table.Number} · capacidad {table.Capacity}",
+                        table.Id.ToString(),
+                        model.TableId == table.Id))
+                    .ToList();
+
+                if (!suggestTable)
+                {
+                    return;
+                }
+
+                var suggestion = availableTables.FirstOrDefault();
+
+                model.SuggestedTableId = suggestion?.Id;
+
+                model.SuggestedTableDescription = suggestion is null
+                    ? null
+                    : $"Mesa {suggestion.Number} · capacidad {suggestion.Capacity}";
+
+                model.TableId = suggestion?.Id;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                model.AvailableTables = [];
+                model.SuggestedTableId = null;
+                model.SuggestedTableDescription = null;
+            }
+        }
+
+        private static ReservationListItemViewModel
+            ToListItemViewModel(
+                Reservation reservation,
+                IReadOnlyDictionary<int, Table> tables)
+        {
+            var tableNumber =
+                tables.TryGetValue(reservation.TableId, out var table)
+                    ? table.Number
+                    : reservation.TableId;
 
             return new ReservationListItemViewModel
             {
@@ -258,7 +358,8 @@ namespace SmartRestaurant.Web.Controllers
             };
         }
 
-        private static string GetStatusLabel(ReservationStatus status)
+        private static string GetStatusLabel(
+            ReservationStatus status)
         {
             return status switch
             {
@@ -270,7 +371,8 @@ namespace SmartRestaurant.Web.Controllers
             };
         }
 
-        private static bool IsReservationValidationException(Exception exception)
+        private static bool IsReservationValidationException(
+            Exception exception)
         {
             return exception is InvalidOperationException
                 or ArgumentException

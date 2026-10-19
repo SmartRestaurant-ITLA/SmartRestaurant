@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SmartRestaurant.Domain.Entities;
 using System.Reflection;
 
 namespace SmartRestaurant.Infrastructure.Contexts
@@ -11,6 +12,9 @@ namespace SmartRestaurant.Infrastructure.Contexts
         }
 
         // Aquí irán los DbSets de las entidades.
+        public DbSet<Reservation> Reservations => Set<Reservation>();
+
+        public DbSet<Table> Tables => Set<Table>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
