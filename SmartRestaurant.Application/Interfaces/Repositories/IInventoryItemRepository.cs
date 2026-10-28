@@ -1,6 +1,6 @@
 ﻿using SmartRestaurant.Domain.Entities;
 
-namespace SmartRestaurant.Domain.Interfaces;
+namespace SmartRestaurant.Application.Interfaces.Repositories;
 
 public interface IInventoryItemRepository
 {

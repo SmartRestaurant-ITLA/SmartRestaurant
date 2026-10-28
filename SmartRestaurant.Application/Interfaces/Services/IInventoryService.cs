@@ -1,6 +1,6 @@
 ﻿using SmartRestaurant.Application.DTOs.Inventory;
 
-namespace SmartRestaurant.Application.Interfaces;
+namespace SmartRestaurant.Application.Interfaces.Services;
 
 public interface IInventoryService
 {

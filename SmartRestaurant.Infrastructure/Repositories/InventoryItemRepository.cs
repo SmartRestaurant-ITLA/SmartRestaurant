@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartRestaurant.Domain.Entities;
-using SmartRestaurant.Domain.Interfaces;
+using SmartRestaurant.Application.Interfaces.Repositories;
 using SmartRestaurant.Infrastructure.Contexts;
 
 namespace SmartRestaurant.Infrastructure.Repositories;

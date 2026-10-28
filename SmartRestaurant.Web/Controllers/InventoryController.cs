@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SmartRestaurant.Application.DTOs.Inventory;
-using SmartRestaurant.Application.Interfaces;
+using SmartRestaurant.Application.Interfaces.Services;
 
 namespace SmartRestaurant.Web.Controllers;
 

@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using SmartRestaurant.Application.Interfaces;
-using SmartRestaurant.Application.Service;
+using SmartRestaurant.Application.Interfaces.Services;
+using SmartRestaurant.Application.Services;
 using System.Reflection;
 
 namespace SmartRestaurant.Application

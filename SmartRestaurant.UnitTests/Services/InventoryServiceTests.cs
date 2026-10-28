@@ -2,7 +2,7 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging.Abstractions;
 using SmartRestaurant.Application.DTOs.Inventory;
-using SmartRestaurant.Application.Service;
+using SmartRestaurant.Application.Services;
 using SmartRestaurant.Application.Validators.Inventory;
 using SmartRestaurant.Domain.Enums;
 using SmartRestaurant.UnitTests.Fakes;

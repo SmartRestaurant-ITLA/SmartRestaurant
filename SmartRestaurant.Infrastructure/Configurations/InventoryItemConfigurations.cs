@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SmartRestaurant.Domain.Entities;
 
-namespace SmartRestaurant.Infrastructure.EntityConfigurations;
+namespace SmartRestaurant.Infrastructure.Configurations;
 
 public class InventoryItemConfigurations : IEntityTypeConfiguration<InventoryItem>
 {

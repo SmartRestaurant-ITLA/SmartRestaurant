@@ -1,5 +1,5 @@
 ﻿using SmartRestaurant.Domain.Entities;
-using SmartRestaurant.Domain.Interfaces;
+using SmartRestaurant.Application.Interfaces.Repositories;
 
 namespace SmartRestaurant.UnitTests.Fakes;
 

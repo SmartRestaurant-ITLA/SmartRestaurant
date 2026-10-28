@@ -2,11 +2,11 @@
 using FluentValidation;
 using FluentValidation.Results;
 using SmartRestaurant.Application.DTOs.Inventory;
-using SmartRestaurant.Application.Interfaces;
+using SmartRestaurant.Application.Interfaces.Services;
 using SmartRestaurant.Domain.Entities;
-using SmartRestaurant.Domain.Interfaces;
+using SmartRestaurant.Application.Interfaces.Repositories;
 
-namespace SmartRestaurant.Application.Service;
+namespace SmartRestaurant.Application.Services;
 
 public class InventoryService : IInventoryService
 {
