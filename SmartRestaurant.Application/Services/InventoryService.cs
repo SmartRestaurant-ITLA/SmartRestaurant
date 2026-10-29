@@ -57,6 +57,8 @@ public class InventoryService : IInventoryService
         await EnsureNameIsUniqueAsync(dto.Name, null, ct);
 
         var item = _mapper.Map<InventoryItem>(dto);
+        item.CreatedAt = DateTime.UtcNow;
+        item.UpdatedAt = item.CreatedAt;
         await _repository.AddAsync(item, ct);
         return item.Id;
     }

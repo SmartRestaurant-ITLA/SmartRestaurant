@@ -15,6 +15,7 @@ namespace SmartRestaurant.Application
 
             // Aquí registrarás los servicios de negocio conforme se vayan creando
             // Ejemplo: services.AddTransient<IReservationService, ReservationService>();
+            services.AddScoped<ReservationService>();
             services.AddScoped<IInventoryService, InventoryService>();
         }
     }

@@ -6,4 +6,17 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Common\Enums\**" />
+    <Compile Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Common\Enums\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Common\Enums\**" />
+    <None Remove="Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\" />
+  </ItemGroup>
+
 </Project>

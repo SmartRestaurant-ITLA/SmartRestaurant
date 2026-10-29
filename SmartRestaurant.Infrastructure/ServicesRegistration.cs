@@ -12,11 +12,9 @@ namespace SmartRestaurant.Infrastructure
     {
         public static void AddPersistenceLayerIoc(this IServiceCollection services, IConfiguration configuration)
         {
-            // Base de datos
             services.AddDbContext<SmartRestaurantDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-            // Repositorios
             services.AddScoped<IInventoryItemRepository, InventoryItemRepository>();
         }
     }
