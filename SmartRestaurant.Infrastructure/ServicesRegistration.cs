@@ -15,6 +15,7 @@ namespace SmartRestaurant.Infrastructure
             services.AddDbContext<SmartRestaurantDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+            services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddScoped<IInventoryItemRepository, InventoryItemRepository>();
         }
     }
