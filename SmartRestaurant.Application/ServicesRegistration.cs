@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
+using SmartRestaurant.Application.Interfaces.Services;
 using SmartRestaurant.Application.Services;
+using System.Reflection;
 
 namespace SmartRestaurant.Application
 {
@@ -8,11 +10,13 @@ namespace SmartRestaurant.Application
     {
         public static void AddApplicationLayerIoc(this IServiceCollection services)
         {
-            
+            services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             // Aquí registrarás los servicios de negocio conforme se vayan creando
             // Ejemplo: services.AddTransient<IReservationService, ReservationService>();
             services.AddScoped<ReservationService>();
+            services.AddScoped<IInventoryService, InventoryService>();
         }
     }
 }
