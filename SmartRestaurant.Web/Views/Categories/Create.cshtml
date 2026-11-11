@@ -1,0 +1,58 @@
+﻿@model SmartRestaurant.Web.ViewModels.CategoryFormViewModel
+@{
+    ViewData["Title"] = "Nueva categoría";
+}
+
+<link rel="stylesheet" href="~/css/reservations.css" asp-append-version="true" />
+
+<section class="sr-page sr-create py-4">
+
+    <div class="sr-header mb-4">
+        <div>
+            <p class="sr-eyebrow mb-2">SMARTRESTAURANT / CATEGORÍAS</p>
+            <h1 class="sr-title">Nueva categoría</h1>
+            <p class="sr-subtitle mb-0">Registra una categoría para agrupar los productos del menú.</p>
+        </div>
+
+        <a asp-action="Index" class="btn sr-back-btn">&larr; Volver a categorías</a>
+    </div>
+
+    <form asp-action="Create" method="post">
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger sr-validation-summary" role="alert"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="sr-form-panel">
+
+                    <div class="sr-panel-header">
+                        <div>
+                            <h2>Datos de la categoría</h2>
+                            <p>Información básica de la categoría.</p>
+                        </div>
+                        <span class="sr-panel-number">01</span>
+                    </div>
+
+                    <div class="sr-panel-body">
+                        <div class="mb-4">
+                            <label asp-for="Name" class="sr-field-label"></label>
+                            <span class="sr-required">*</span>
+                            <input asp-for="Name" class="form-control sr-control" placeholder="Ej. Bebidas" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="sr-form-divider"></div>
+
+                        <button type="submit" class="btn btn-primary sr-primary-btn w-100">Guardar categoría</button>
+                        <a asp-action="Index" class="btn sr-cancel-btn w-100 mt-2">Cancelar</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
