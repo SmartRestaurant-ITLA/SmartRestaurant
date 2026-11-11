@@ -17,6 +17,8 @@ namespace SmartRestaurant.Infrastructure
 
             services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddScoped<IInventoryItemRepository, InventoryItemRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
         }
     }
 }
