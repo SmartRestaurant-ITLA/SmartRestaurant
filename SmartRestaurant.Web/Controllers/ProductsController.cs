@@ -127,8 +127,10 @@ public class ProductsController : Controller
         var product = await _productService.GetByIdAsync(id);
         if (product is null) return NotFound();
 
-        await _productService.SetActiveAsync(id, !product.IsActive);
-        TempData["Success"] = product.IsActive ? "Producto desactivado." : "Producto activado.";
+        var activar = !product.IsActive;   // se guarda ANTES de cambiarlo
+
+        await _productService.SetActiveAsync(id, activar);
+        TempData["Success"] = activar ? "Producto activado." : "Producto desactivado.";
         return RedirectToAction(nameof(Index));
     }
 

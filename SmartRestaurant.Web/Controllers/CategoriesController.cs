@@ -95,8 +95,10 @@ public class CategoriesController : Controller
         var category = await _categoryService.GetByIdAsync(id);
         if (category is null) return NotFound();
 
-        await _categoryService.SetActiveAsync(id, !category.IsActive);
-        TempData["Success"] = category.IsActive ? "Categoría desactivada." : "Categoría activada.";
+        var activar = !category.IsActive;   // se guarda ANTES de cambiarla
+
+        await _categoryService.SetActiveAsync(id, activar);
+        TempData["Success"] = activar ? "Categoría activada." : "Categoría desactivada.";
         return RedirectToAction(nameof(Index));
     }
 }
