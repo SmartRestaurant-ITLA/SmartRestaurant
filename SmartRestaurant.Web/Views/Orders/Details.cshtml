@@ -1,0 +1,79 @@
+@model SmartRestaurant.Web.ViewModels.OrderDetailsViewModel
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id}";
+
+    string GetStatusLabel(SmartRestaurant.Domain.Enums.OrderStatus status) => status switch
+    {
+        SmartRestaurant.Domain.Enums.OrderStatus.Pending => "Pendiente",
+        SmartRestaurant.Domain.Enums.OrderStatus.InPreparation => "En preparación",
+        SmartRestaurant.Domain.Enums.OrderStatus.Served => "Servido",
+        SmartRestaurant.Domain.Enums.OrderStatus.Cancelled => "Cancelado",
+        _ => status.ToString()
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Pedido #@Model.Id</h1>
+        <p class="text-muted mb-0">Mesa @Model.TableNumber · @Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Volver a pedidos</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success" role="status">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Estado: @GetStatusLabel(Model.Status)</h2>
+        @if (Model.AvailableStatusTransitions.Count > 0)
+        {
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var status in Model.AvailableStatusTransitions)
+                {
+                    <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                        <input type="hidden" name="status" value="@((int)status)" />
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            Marcar como @GetStatusLabel(status)
+                        </button>
+                    </form>
+                }
+            </div>
+        }
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th class="text-end">Precio unitario</th>
+                    <th class="text-end">Cantidad</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var detail in Model.Details)
+                {
+                    <tr>
+                        <td>@detail.ProductName</td>
+                        <td class="text-end">RD$ @detail.UnitPrice.ToString("N2")</td>
+                        <td class="text-end">@detail.Quantity</td>
+                        <td class="text-end">RD$ @detail.Subtotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td colspan="3">Total</td>
+                    <td class="text-end">RD$ @Model.Total.ToString("N2")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
