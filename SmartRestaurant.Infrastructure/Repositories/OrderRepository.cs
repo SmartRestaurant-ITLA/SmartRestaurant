@@ -2,6 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using SmartRestaurant.Application.Interfaces.Repositories;
 using SmartRestaurant.Domain.Entities;
 using SmartRestaurant.Infrastructure.Contexts;
+/*Cambio 2: using nuevo
+Descripción: necesario para usar OrderStatus en la consulta.*/
+using SmartRestaurant.Domain.Enums;
+
 
 namespace SmartRestaurant.Infrastructure.Repositories;
 
@@ -29,6 +33,17 @@ public class OrderRepository : IOrderRepository
         _orders
             .Include(order => order.Details)
             .FirstOrDefaultAsync(order => order.Id == id, ct);
+
+    /*Cambio 3: implementación
+    Descripción: consulta SQL (vía EF) que devuelve true si existe un pedido de esa mesa en estado Pending o InPreparation. 
+    Served y Cancelled no cuentan como abiertos, así que la mesa queda libre al terminar o cancelar. Es una consulta de solo lectura que no carga entidades.*/
+
+    public Task<bool> HasOpenOrderForTableAsync(int tableId, int? excludeOrderId = null, CancellationToken ct = default) =>
+    _orders.AnyAsync(
+        order => order.TableId == tableId
+            && (order.Status == OrderStatus.Pending || order.Status == OrderStatus.InPreparation)
+            && (excludeOrderId == null || order.Id != excludeOrderId),
+        ct);
 
     public async Task AddAsync(Order order, CancellationToken ct = default)
     {

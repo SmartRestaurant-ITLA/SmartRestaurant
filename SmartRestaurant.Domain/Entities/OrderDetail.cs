@@ -41,6 +41,20 @@ public class OrderDetail
         Quantity = quantity;
     }
 
+    /*Cambio 1: ChangeQuantity
+    Descripción: permite modificar la cantidad de una línea ya existente. Rechaza cantidades menores o iguales a cero. 
+    Es internal, así que solo Order puede llamarlo y nadie cambia cantidades saltándose las reglas del pedido. 
+    El subtotal se recalcula solo, porque Subtotal es una propiedad calculada.*/
+    internal void ChangeQuantity(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "La cantidad debe ser mayor que cero.");
+        }
+
+        Quantity = quantity;
+    }
+
     public int Id { get; private set; }
 
     public int OrderId { get; private set; }

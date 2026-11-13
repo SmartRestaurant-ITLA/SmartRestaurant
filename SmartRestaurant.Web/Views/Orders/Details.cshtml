@@ -1,3 +1,7 @@
+@*Descripción: cuando el pedido está en Pending, cada línea muestra un campo de cantidad con botón “Guardar” y un botón “Quitar” 
+(deshabilitado si es la última línea), y aparece una tarjeta para agregar productos.
+En otros estados la tabla queda en solo lectura. Los precios no se envían: el servidor los toma del catálogo.*@
+
 @model SmartRestaurant.Web.ViewModels.OrderDetailsViewModel
 @{
     ViewData["Title"] = $"Pedido #{Model.Id}";
@@ -10,6 +14,8 @@
         SmartRestaurant.Domain.Enums.OrderStatus.Cancelled => "Cancelado",
         _ => status.ToString()
     };
+
+    var columns = Model.CanEditItems ? 5 : 4;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -55,6 +61,10 @@
                     <th class="text-end">Precio unitario</th>
                     <th class="text-end">Cantidad</th>
                     <th class="text-end">Subtotal</th>
+                    @if (Model.CanEditItems)
+                    {
+                        <th class="text-end">Acciones</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -63,8 +73,36 @@
                     <tr>
                         <td>@detail.ProductName</td>
                         <td class="text-end">RD$ @detail.UnitPrice.ToString("N2")</td>
-                        <td class="text-end">@detail.Quantity</td>
+                        @if (Model.CanEditItems)
+                        {
+                            <td class="text-end">
+                                <form asp-action="UpdateItem" asp-route-id="@Model.Id" method="post"
+                                      class="d-inline-flex gap-2 justify-content-end">
+                                    <input type="hidden" name="productId" value="@detail.ProductId" />
+                                    <input type="number" name="quantity" value="@detail.Quantity"
+                                           min="1" class="form-control form-control-sm" style="width: 90px;" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                                </form>
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="text-end">@detail.Quantity</td>
+                        }
                         <td class="text-end">RD$ @detail.Subtotal.ToString("N2")</td>
+                        @if (Model.CanEditItems)
+                        {
+                            <td class="text-end">
+                                <form asp-action="RemoveItem" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                    <input type="hidden" name="productId" value="@detail.ProductId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            disabled="@(Model.Details.Count <= 1 ? "disabled" : null)"
+                                            title="@(Model.Details.Count <= 1 ? "El pedido debe conservar al menos un producto. Cancélalo si ya no se necesita." : null)">
+                                        Quitar
+                                    </button>
+                                </form>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -72,8 +110,53 @@
                 <tr class="fw-bold">
                     <td colspan="3">Total</td>
                     <td class="text-end">RD$ @Model.Total.ToString("N2")</td>
+                    @if (Model.CanEditItems)
+                    {
+                        <td></td>
+                    }
                 </tr>
             </tfoot>
         </table>
     </div>
 </div>
+
+@if (Model.CanEditItems)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Agregar producto</h2>
+        </div>
+        <div class="card-body">
+            @if (Model.AvailableProducts.Count == 0)
+            {
+                <p class="text-muted mb-0">No hay productos activos para agregar.</p>
+            }
+            else
+            {
+                <form asp-action="AddItem" asp-route-id="@Model.Id" method="post" class="row g-3 align-items-end">
+                    <div class="col-md-7">
+                        <label for="addProductId" class="form-label">Producto</label>
+                        <select id="addProductId" name="productId" class="form-select" required>
+                            <option value="">Selecciona un producto</option>
+                            @foreach (var product in Model.AvailableProducts)
+                            {
+                                <option value="@product.Id">@product.Name — RD$ @product.Price.ToString("N2")</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="addQuantity" class="form-label">Cantidad</label>
+                        <input id="addQuantity" name="quantity" type="number" min="1" value="1"
+                               class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">Agregar</button>
+                    </div>
+                </form>
+                <p class="text-muted small mt-3 mb-0">
+                    Si el producto ya está en el pedido, se suma la cantidad. El precio lo toma el servidor del catálogo.
+                </p>
+            }
+        </div>
+    </div>
+}
