@@ -77,6 +77,20 @@ public class OrderService : IOrderService
             ]);
         }
 
+        /*Cambio 4: validación en CreateAsync
+        Descripción: antes de crear el pedido, rechaza la creación si la mesa ya tiene uno abierto. 
+        Lanza ValidationException asociada al campo TableId, así que el controlador de Carlos Samuel ya la captura y la muestra en el formulario sin cambios.*/
+
+        if (await _orderRepository.HasOpenOrderForTableAsync(dto.TableId, null, ct))
+        {
+            throw new ValidationException(
+            [
+                new ValidationFailure(
+            nameof(CreateOrderDto.TableId),
+            "La mesa ya tiene un pedido abierto.")
+            ]);
+        }
+
         var productIds = dto.Details.Select(detail => detail.ProductId).Distinct().ToArray();
         var products = await _productRepository.GetByIdsAsync(productIds, ct);
         var productsById = products.ToDictionary(product => product.Id);
