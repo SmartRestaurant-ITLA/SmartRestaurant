@@ -15,5 +15,13 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
             .GreaterThan(0).WithMessage("El precio debe ser mayor que cero.")
             .Must(price => decimal.Round(price, 2) == price)
             .WithMessage("El precio no puede tener más de dos decimales.");
+
+        // Catálogo (César)
+        RuleFor(product => product.Description)
+            .MaximumLength(500).WithMessage("La descripción no puede tener más de 500 caracteres.");
+
+        RuleFor(product => product.CategoryId)
+            .NotNull().WithMessage("Debe seleccionar una categoría.")
+            .GreaterThan(0).WithMessage("Debe seleccionar una categoría.");
     }
 }

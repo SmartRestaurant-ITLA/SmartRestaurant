@@ -1,8 +1,9 @@
-﻿@model SmartRestaurant.Web.ViewModels.ProductListItemViewModel
+﻿@model SmartRestaurant.Application.DTOs.Products.ProductDto
 @{
     ViewData["Title"] = "Detalles del producto";
     var estadoClase = Model.IsActive ? "sr-status-confirmed" : "sr-status-cancelled";
     var estadoTexto = Model.IsActive ? "Activo" : "Inactivo";
+    var categoria = Model.CategoryName ?? "Sin categoría";
 }
 
 <link rel="stylesheet" href="~/css/reservations.css" asp-append-version="true" />
@@ -46,7 +47,7 @@
                     </div>
                     <div class="sr-detail-item">
                         <dt>Categoría</dt>
-                        <dd>@Model.CategoryName</dd>
+                        <dd>@categoria</dd>
                     </div>
                     <div class="sr-detail-item">
                         <dt>Precio</dt>
@@ -55,14 +56,6 @@
                     <div class="sr-detail-item">
                         <dt>Estado</dt>
                         <dd><span class="sr-status @estadoClase">@estadoTexto</span></dd>
-                    </div>
-                    <div class="sr-detail-item">
-                        <dt>Fecha de creación</dt>
-                        <dd>@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
-                    </div>
-                    <div class="sr-detail-item">
-                        <dt>Última actualización</dt>
-                        <dd>@Model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
                     </div>
                 </dl>
 
@@ -91,7 +84,7 @@
                     </div>
                     <div class="sr-summary-line">
                         <span>Categoría</span>
-                        <strong>@Model.CategoryName</strong>
+                        <strong>@categoria</strong>
                     </div>
                     <div class="sr-summary-line">
                         <span>Estado</span>

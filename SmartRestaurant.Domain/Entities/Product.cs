@@ -21,10 +21,35 @@ public class Product : BaseEntity
 
     public bool IsActive { get; private set; }
 
+    // Catálogo (César): descripción opcional y categoría
+    public string? Description { get; private set; }
+
+    public int? CategoryId { get; private set; }
+
     public void Update(string name, decimal price)
     {
         SetName(name);
         SetPrice(price);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    // Catálogo (César): asigna descripción y categoría
+    public void SetCatalogInfo(string? description, int? categoryId)
+    {
+        var normalizedDescription = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+
+        if (normalizedDescription is not null && normalizedDescription.Length > 500)
+        {
+            throw new ArgumentOutOfRangeException(nameof(description), "La descripción no puede superar 500 caracteres.");
+        }
+
+        if (categoryId is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(categoryId), "La categoría seleccionada no es válida.");
+        }
+
+        Description = normalizedDescription;
+        CategoryId = categoryId;
         UpdatedAt = DateTime.UtcNow;
     }
 

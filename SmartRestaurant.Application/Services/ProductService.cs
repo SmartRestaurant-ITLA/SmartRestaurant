@@ -10,15 +10,18 @@ namespace SmartRestaurant.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
+    private readonly ICategoryRepository _categoryRepository;   // Catálogo (César)
     private readonly IValidator<CreateProductDto> _createValidator;
     private readonly IValidator<UpdateProductDto> _updateValidator;
 
     public ProductService(
         IProductRepository repository,
+        ICategoryRepository categoryRepository,
         IValidator<CreateProductDto> createValidator,
         IValidator<UpdateProductDto> updateValidator)
     {
         _repository = repository;
+        _categoryRepository = categoryRepository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
     }
@@ -26,13 +29,20 @@ public class ProductService : IProductService
     public async Task<IReadOnlyList<ProductDto>> GetAllAsync(bool includeInactive = false, CancellationToken ct = default)
     {
         var products = await _repository.GetAllAsync(includeInactive, ct);
-        return products.Select(ToDto).ToArray();
+        var categoryNames = await GetCategoryNamesAsync();
+        return products.Select(product => ToDto(product, categoryNames)).ToArray();
     }
 
     public async Task<ProductDto?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         var product = await _repository.GetByIdAsync(id, ct);
-        return product is null ? null : ToDto(product);
+        if (product is null)
+        {
+            return null;
+        }
+
+        var categoryNames = await GetCategoryNamesAsync();
+        return ToDto(product, categoryNames);
     }
 
     public async Task<UpdateProductDto?> GetForEditAsync(int id, CancellationToken ct = default)
@@ -40,7 +50,14 @@ public class ProductService : IProductService
         var product = await _repository.GetByIdAsync(id, ct);
         return product is null
             ? null
-            : new UpdateProductDto { Id = product.Id, Name = product.Name, Price = product.Price };
+            : new UpdateProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Price = product.Price,
+                Description = product.Description,
+                CategoryId = product.CategoryId
+            };
     }
 
     public async Task<int> CreateAsync(CreateProductDto dto, CancellationToken ct = default)
@@ -49,6 +66,7 @@ public class ProductService : IProductService
 
         var name = dto.Name.Trim();
         await EnsureNameIsUniqueAsync(name, null, ct);
+        await EnsureCategoryIsValidAsync(dto.CategoryId);
 
         var now = DateTime.UtcNow;
         var product = new Product(name, dto.Price)
@@ -56,6 +74,7 @@ public class ProductService : IProductService
             CreatedAt = now,
             UpdatedAt = now
         };
+        product.SetCatalogInfo(dto.Description, dto.CategoryId);
 
         await _repository.AddAsync(product, ct);
         return product.Id;
@@ -73,7 +92,10 @@ public class ProductService : IProductService
 
         var name = dto.Name.Trim();
         await EnsureNameIsUniqueAsync(name, dto.Id, ct);
+        await EnsureCategoryIsValidAsync(dto.CategoryId);
+
         product.Update(name, dto.Price);
+        product.SetCatalogInfo(dto.Description, dto.CategoryId);
         await _repository.UpdateAsync(product, ct);
         return true;
     }
@@ -110,12 +132,35 @@ public class ProductService : IProductService
         }
     }
 
-    private static ProductDto ToDto(Product product) =>
+    // Catálogo (César): regla 8.2 "categoría válida" (que exista y esté activa)
+    private async Task EnsureCategoryIsValidAsync(int? categoryId)
+    {
+        var category = categoryId is null ? null : await _categoryRepository.GetByIdAsync(categoryId.Value);
+        if (category is null || !category.IsActive)
+        {
+            throw new ValidationException(
+            [
+                new ValidationFailure(nameof(CreateProductDto.CategoryId), "La categoría seleccionada no existe o está inactiva.")
+            ]);
+        }
+    }
+
+    // Catálogo (César): nombres de categorías para mostrar en listas y detalles
+    private async Task<Dictionary<int, string>> GetCategoryNamesAsync()
+    {
+        var categories = await _categoryRepository.GetAllAsync();
+        return categories.ToDictionary(category => category.Id, category => category.Name);
+    }
+
+    private static ProductDto ToDto(Product product, IReadOnlyDictionary<int, string> categoryNames) =>
         new()
         {
             Id = product.Id,
             Name = product.Name,
             Price = product.Price,
-            IsActive = product.IsActive
+            IsActive = product.IsActive,
+            Description = product.Description,
+            CategoryId = product.CategoryId,
+            CategoryName = product.CategoryId is int id && categoryNames.TryGetValue(id, out var name) ? name : null
         };
 }

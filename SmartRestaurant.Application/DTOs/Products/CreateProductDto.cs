@@ -9,4 +9,11 @@ public class CreateProductDto
 
     [Display(Name = "Precio (RD$)")]
     public decimal Price { get; set; }
+
+    // Catálogo (César)
+    [Display(Name = "Descripción")]
+    public string? Description { get; set; }
+
+    [Display(Name = "Categoría")]
+    public int? CategoryId { get; set; }
 }
