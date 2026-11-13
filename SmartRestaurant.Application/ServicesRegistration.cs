@@ -22,6 +22,7 @@ namespace SmartRestaurant.Application
             services.AddScoped<IDailySaleService, DailySaleService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ITableService, TableService>();
         }
     }
 }

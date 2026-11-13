@@ -22,6 +22,8 @@ namespace SmartRestaurant.Infrastructure.Contexts
 
         public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
 
+        public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
