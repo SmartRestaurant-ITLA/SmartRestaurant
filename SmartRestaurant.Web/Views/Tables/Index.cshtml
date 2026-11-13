@@ -1,0 +1,731 @@
+
+@model IReadOnlyList<SmartRestaurant.Web.ViewModels.TableListItemViewModel>
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Gestión de Mesas";
+
+    var controllerName =
+        ViewData["TablesController"]?.ToString() ?? "Tables";
+
+    var mesas = Model ??
+        Array.Empty<SmartRestaurant.Web.ViewModels.TableListItemViewModel>();
+
+    var total = mesas.Count;
+    var activas = mesas.Count(m => m.IsActive);
+    var inactivas = total - activas;
+
+    var capacidadActiva = mesas
+        .Where(m => m.IsActive)
+        .Sum(m => m.Capacity);
+
+    var success = TempData["Success"] as string;
+}
+
+<link rel="stylesheet"
+      href="~/css/tables.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/tables-list.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/tables-ui.css"
+      asp-append-version="true" />
+
+<section class="tm-page tm-list-page">
+
+    <!-- ENCABEZADO -->
+
+    <div class="tm-breadcrumb">
+        SMARTRESTAURANT
+        <span>/</span>
+        ADMINISTRACIÓN
+    </div>
+
+    <header class="tm-list-hero">
+
+        <div>
+            <span class="tm-hero-tag">
+                ADMINISTRACIÓN DEL RESTAURANTE
+            </span>
+
+            <h1>Gestión de mesas</h1>
+
+            <p>
+                Consulta y administra las mesas,
+                sus capacidades y estados.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Create"
+           class="tm-btn tm-btn-primary tm-list-new">
+            <span aria-hidden="true">+</span>
+            Nueva mesa
+        </a>
+
+    </header>
+
+    <!-- MENSAJE PERSONALIZADO -->
+
+    @if (!string.IsNullOrWhiteSpace(success))
+    {
+        <div class="tm-notice tm-notice-success"
+             role="status"
+             id="tableSuccessNotice">
+
+            <span class="tm-notice-icon" aria-hidden="true">
+                ✓
+            </span>
+
+            <div class="tm-notice-content">
+                <strong>Operación realizada</strong>
+                <p>@success</p>
+            </div>
+
+            <button type="button"
+                    class="tm-notice-close"
+                    aria-label="Cerrar notificación">
+                ×
+            </button>
+
+        </div>
+    }
+
+    <!-- TARJETAS DE ESTADÍSTICAS -->
+
+    <div class="tm-list-stats">
+
+        <article class="tm-list-stat">
+            <div class="tm-list-stat-top">
+                <span>Total de mesas</span>
+                <span class="tm-list-stat-icon tm-list-blue">#</span>
+            </div>
+
+            <strong>@total</strong>
+            <small>Mesas registradas</small>
+        </article>
+
+        <article class="tm-list-stat">
+            <div class="tm-list-stat-top">
+                <span>Mesas activas</span>
+                <span class="tm-list-stat-icon tm-list-green">✓</span>
+            </div>
+
+            <strong>@activas</strong>
+            <small>Habilitadas administrativamente</small>
+        </article>
+
+        <article class="tm-list-stat">
+            <div class="tm-list-stat-top">
+                <span>Mesas inactivas</span>
+                <span class="tm-list-stat-icon tm-list-gray">—</span>
+            </div>
+
+            <strong>@inactivas</strong>
+            <small>Deshabilitadas</small>
+        </article>
+
+        <article class="tm-list-stat">
+            <div class="tm-list-stat-top">
+                <span>Capacidad activa</span>
+                <span class="tm-list-stat-icon tm-list-orange">+</span>
+            </div>
+
+            <strong>@capacidadActiva</strong>
+            <small>Plazas en mesas habilitadas</small>
+        </article>
+
+    </div>
+
+    <!-- LISTADO -->
+
+    <div class="tm-list-panel">
+
+        <div class="tm-list-panel-head">
+            <div>
+                <h2>Listado de mesas</h2>
+                <p>Información y configuración de las mesas registradas.</p>
+            </div>
+
+            <span class="tm-list-total">
+                @total registros
+            </span>
+        </div>
+
+        <!-- FILTROS -->
+
+        <div class="tm-list-toolbar">
+
+            <div class="tm-list-search">
+
+                <label for="tableSearch">Buscar mesa</label>
+
+                <div class="tm-list-search-box">
+                    <span aria-hidden="true">⌕</span>
+
+                    <input type="search"
+                           id="tableSearch"
+                           placeholder="Buscar por número..."
+                           autocomplete="off" />
+                </div>
+
+            </div>
+
+            <div class="tm-list-filter">
+
+                <label for="statusFilter">
+                    Estado administrativo
+                </label>
+
+                <select id="statusFilter">
+                    <option value="all">Todos los estados</option>
+                    <option value="true">Activas</option>
+                    <option value="false">Inactivas</option>
+                </select>
+
+            </div>
+
+            <div class="tm-list-filter">
+
+                <label for="capacityFilter">
+                    Capacidad mínima
+                </label>
+
+                <select id="capacityFilter">
+                    <option value="0">Cualquier capacidad</option>
+                    <option value="2">2 personas o más</option>
+                    <option value="4">4 personas o más</option>
+                    <option value="6">6 personas o más</option>
+                    <option value="8">8 personas o más</option>
+                </select>
+
+            </div>
+
+            <button type="button"
+                    class="tm-list-clear-btn"
+                    id="clearFilters">
+                Limpiar filtros
+            </button>
+
+        </div>
+
+        @if (mesas.Count == 0)
+        {
+            <!-- SIN MESAS -->
+
+            <div class="tm-list-empty">
+
+                <div class="tm-list-empty-icon">
+                    <span aria-hidden="true">▣</span>
+                </div>
+
+                <h3>No hay mesas registradas</h3>
+
+                <p>
+                    Registra tu primera mesa para comenzar
+                    a administrar el restaurante.
+                </p>
+
+                <a asp-controller="@controllerName"
+                   asp-action="Create"
+                   class="tm-btn tm-btn-primary">
+                    Registrar primera mesa
+                </a>
+
+            </div>
+        }
+        else
+        {
+            <!-- TABLA -->
+
+            <div class="tm-list-table-wrap">
+
+                <table class="tm-list-table">
+
+                    <thead>
+                        <tr>
+                            <th>Mesa</th>
+                            <th>Capacidad</th>
+                            <th>Estado administrativo</th>
+                            <th>Disponibilidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var mesa in mesas)
+                        {
+                            var estado = mesa.IsActive
+                                ? "Activa"
+                                : "Inactiva";
+
+                            <tr class="tm-list-row"
+                                data-number="@mesa.Number"
+                                data-capacity="@mesa.Capacity"
+                                data-active="@(mesa.IsActive ? "true" : "false")">
+
+                                <td>
+                                    <div class="tm-list-table-name">
+
+                                        <span class="tm-list-table-symbol"
+                                              aria-hidden="true">
+                                            ▣
+                                        </span>
+
+                                        <div>
+                                            <strong>
+                                                Mesa @mesa.Number.ToString("00")
+                                            </strong>
+                                            <small>ID #@mesa.Id</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="tm-list-capacity">
+                                        <strong>@mesa.Capacity</strong>
+                                        <span>
+                                            @(mesa.Capacity == 1
+                                                ? "persona"
+                                                : "personas")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="tm-list-status @(mesa.IsActive ? "tm-list-status-active" : "tm-list-status-inactive")">
+                                        <span></span>
+                                        @estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="tm-list-unavailable-data">
+                                        Sin consultar
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="tm-list-actions">
+
+                                        <!-- DETALLES -->
+
+                                        <button type="button"
+                                                class="tm-list-action-btn"
+                                                data-details
+                                                data-number="@mesa.Number"
+                                                data-capacity="@mesa.Capacity"
+                                                data-active="@(mesa.IsActive ? "true" : "false")">
+                                            Detalles
+                                        </button>
+
+                                        <!-- EDITAR -->
+
+                                        <a asp-controller="@controllerName"
+                                           asp-action="Edit"
+                                           asp-route-id="@mesa.Id"
+                                           class="tm-list-action-btn tm-action-edit">
+                                            Editar
+                                        </a>
+
+                                        <!-- CAMBIAR HABILITACIÓN -->
+
+                                        <form asp-controller="@controllerName"
+                                              asp-action="ToggleActive"
+                                              asp-route-id="@mesa.Id"
+                                              asp-antiforgery="true"
+                                              method="post"
+                                              class="tm-toggle-form"
+                                              data-number="@mesa.Number"
+                                              data-active="@(mesa.IsActive ? "true" : "false")">
+
+                                            <button type="submit"
+                                                    class="tm-list-action-btn @(mesa.IsActive ? "tm-list-deactivate" : "tm-list-activate")">
+
+                                                @(mesa.IsActive
+                                                    ? "Desactivar"
+                                                    : "Activar")
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="tm-list-no-results"
+                 id="noResults"
+                 hidden>
+                <strong>No se encontraron mesas</strong>
+                <p>Prueba con otros filtros de búsqueda.</p>
+            </div>
+        }
+
+        <div class="tm-list-footer">
+
+            <span id="resultCount"
+                  role="status"
+                  aria-live="polite">
+                Mostrando @total de @total mesas
+            </span>
+
+            <span>Gestión administrativa de mesas</span>
+
+        </div>
+
+    </div>
+
+    <div class="tm-list-info">
+        <span class="tm-list-info-symbol">i</span>
+
+        <p>
+            <strong>Estado y disponibilidad:</strong>
+            una mesa activa no significa necesariamente
+            que esté libre. La disponibilidad real se
+            mostrará cuando esté integrado el backend.
+        </p>
+    </div>
+
+</section>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+
+<dialog id="tableConfirmDialog"
+        class="tm-ui-dialog"
+        aria-labelledby="confirmTitle"
+        aria-describedby="confirmDescription">
+
+    <div class="tm-ui-dialog-body">
+
+        <span class="tm-dialog-icon tm-dialog-icon-warning"
+              id="confirmIcon"
+              aria-hidden="true">
+            !
+        </span>
+
+        <h2 id="confirmTitle">
+            Confirmar acción
+        </h2>
+
+        <p id="confirmDescription">
+            ¿Deseas continuar?
+        </p>
+
+        <div class="tm-dialog-actions">
+
+            <button type="button"
+                    class="tm-dialog-btn tm-dialog-cancel"
+                    id="cancelToggle">
+                Cancelar
+            </button>
+
+            <button type="button"
+                    class="tm-dialog-btn tm-dialog-danger"
+                    id="confirmToggle">
+                Confirmar
+            </button>
+
+        </div>
+
+    </div>
+
+</dialog>
+
+<!-- MODAL DE DETALLES -->
+
+<dialog id="tableDetailsDialog"
+        class="tm-ui-dialog tm-ui-details"
+        aria-labelledby="detailsTitle">
+
+    <div class="tm-ui-details-head">
+
+        <div>
+            <span>SMARTRESTAURANT / MESAS</span>
+            <h2 id="detailsTitle">Detalles de mesa</h2>
+        </div>
+
+        <button type="button"
+                class="tm-ui-close"
+                id="closeDetails"
+                aria-label="Cerrar detalles">
+            ×
+        </button>
+
+    </div>
+
+    <div class="tm-ui-details-body">
+
+        <div class="tm-ui-table-summary">
+            <span>MESA DEL RESTAURANTE</span>
+            <strong id="detailsNumber">—</strong>
+        </div>
+
+        <div class="tm-ui-detail-row">
+            <span>Capacidad máxima</span>
+            <strong id="detailsCapacity">—</strong>
+        </div>
+
+        <div class="tm-ui-detail-row">
+            <span>Estado administrativo</span>
+            <strong id="detailsStatus">—</strong>
+        </div>
+
+        <div class="tm-ui-detail-row">
+            <span>Disponibilidad operativa</span>
+            <strong>Sin consultar</strong>
+        </div>
+
+        <p class="tm-ui-details-note">
+            La disponibilidad dependerá de reservas y pedidos
+            cuando esté integrado el backend.
+        </p>
+
+        <button type="button"
+                id="finishDetails"
+                class="tm-btn tm-btn-primary tm-ui-full-button">
+            Cerrar
+        </button>
+
+    </div>
+
+</dialog>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // =====================================
+            // AVISO DE ÉXITO
+            // =====================================
+
+            const notice =
+                document.getElementById("tableSuccessNotice");
+
+            if (notice) {
+                notice.querySelector(".tm-notice-close")
+                    .addEventListener("click", function () {
+                        notice.remove();
+                    });
+            }
+
+            // =====================================
+            // FILTROS
+            // =====================================
+
+            const search = document.getElementById("tableSearch");
+            const statusFilter = document.getElementById("statusFilter");
+            const capacityFilter = document.getElementById("capacityFilter");
+            const clearFilters = document.getElementById("clearFilters");
+
+            const rows = Array.from(
+                document.querySelectorAll(".tm-list-row")
+            );
+
+            const noResults = document.getElementById("noResults");
+            const count = document.getElementById("resultCount");
+
+            function filterTables() {
+
+                const query = search.value.trim().toLowerCase();
+                const selectedStatus = statusFilter.value;
+                const minCapacity = Number(capacityFilter.value);
+
+                let visible = 0;
+
+                rows.forEach(row => {
+
+                    const number = row.dataset.number;
+                    const capacity = Number(row.dataset.capacity);
+                    const active = row.dataset.active;
+
+                    const text =
+                        `mesa ${number} mesa ${number.padStart(2, "0")}`;
+
+                    const matches =
+                        text.includes(query) &&
+                        (selectedStatus === "all" ||
+                         active === selectedStatus) &&
+                        capacity >= minCapacity;
+
+                    row.hidden = !matches;
+
+                    if (matches) visible++;
+                });
+
+                count.textContent =
+                    `Mostrando ${visible} de ${rows.length} mesas`;
+
+                if (noResults) {
+                    noResults.hidden =
+                        visible !== 0 || rows.length === 0;
+                }
+            }
+
+            search.addEventListener("input", filterTables);
+            statusFilter.addEventListener("change", filterTables);
+            capacityFilter.addEventListener("change", filterTables);
+
+            clearFilters.addEventListener("click", function () {
+                search.value = "";
+                statusFilter.value = "all";
+                capacityFilter.value = "0";
+                filterTables();
+                search.focus();
+            });
+
+            filterTables();
+
+            // =====================================
+            // MODAL DE DETALLES
+            // =====================================
+
+            const detailsDialog =
+                document.getElementById("tableDetailsDialog");
+
+            document.querySelectorAll("[data-details]")
+                .forEach(button => {
+
+                    button.addEventListener("click", function () {
+
+                        const number = button.dataset.number;
+                        const capacity = Number(button.dataset.capacity);
+                        const active = button.dataset.active === "true";
+
+                        document.getElementById("detailsNumber")
+                            .textContent =
+                                "Mesa " + number.padStart(2, "0");
+
+                        document.getElementById("detailsCapacity")
+                            .textContent =
+                                capacity +
+                                (capacity === 1 ? " persona" : " personas");
+
+                        document.getElementById("detailsStatus")
+                            .textContent = active ? "Activa" : "Inactiva";
+
+                        detailsDialog.showModal();
+                    });
+                });
+
+            document.getElementById("closeDetails")
+                .addEventListener("click", () => detailsDialog.close());
+
+            document.getElementById("finishDetails")
+                .addEventListener("click", () => detailsDialog.close());
+
+            // =====================================
+            // MODAL PERSONALIZADO DE ACTIVACIÓN
+            // =====================================
+
+            const confirmDialog =
+                document.getElementById("tableConfirmDialog");
+
+            const title =
+                document.getElementById("confirmTitle");
+
+            const description =
+                document.getElementById("confirmDescription");
+
+            const confirmButton =
+                document.getElementById("confirmToggle");
+
+            const cancelButton =
+                document.getElementById("cancelToggle");
+
+            const confirmIcon =
+                document.getElementById("confirmIcon");
+
+            let pendingForm = null;
+            let confirmed = false;
+
+            document.querySelectorAll(".tm-toggle-form")
+                .forEach(form => {
+
+                    form.addEventListener("submit", function (event) {
+
+                        if (confirmed) {
+                            confirmed = false;
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        pendingForm = form;
+
+                        const number = form.dataset.number;
+                        const isActive = form.dataset.active === "true";
+
+                        title.textContent = isActive
+                            ? `¿Desactivar Mesa ${number}?`
+                            : `¿Activar Mesa ${number}?`;
+
+                        description.textContent = isActive
+                            ? "La mesa quedará deshabilitada administrativamente. No será eliminada y podrás activarla nuevamente."
+                            : "La mesa volverá a estar habilitada administrativamente. Su disponibilidad real dependerá de reservas y pedidos.";
+
+                        confirmButton.textContent = isActive
+                            ? "Sí, desactivar"
+                            : "Sí, activar";
+
+                        confirmButton.classList.toggle(
+                            "tm-dialog-danger", isActive
+                        );
+
+                        confirmButton.classList.toggle(
+                            "tm-dialog-primary", !isActive
+                        );
+
+                        confirmIcon.textContent = isActive ? "!" : "✓";
+
+                        confirmIcon.classList.toggle(
+                            "tm-dialog-icon-warning", isActive
+                        );
+
+                        confirmIcon.classList.toggle(
+                            "tm-dialog-icon-success", !isActive
+                        );
+
+                        confirmDialog.showModal();
+                    });
+
+                });
+
+            cancelButton.addEventListener("click", function () {
+                confirmDialog.close();
+            });
+
+            confirmDialog.addEventListener("close", function () {
+                pendingForm = null;
+            });
+
+            confirmButton.addEventListener("click", function () {
+
+                if (!pendingForm) return;
+
+                const form = pendingForm;
+
+                confirmButton.disabled = true;
+                confirmed = true;
+
+                // Conserva la protección antifalsificación
+                // y realiza el POST correspondiente.
+                form.requestSubmit();
+            });
+
+        });
+    </script>
+}

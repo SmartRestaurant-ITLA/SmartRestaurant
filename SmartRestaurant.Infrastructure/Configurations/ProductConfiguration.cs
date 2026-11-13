@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SmartRestaurant.Domain.Entities;
 
@@ -8,27 +8,29 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        builder.ToTable("Products");
+        builder.ToTable("Products", table =>
+            table.HasCheckConstraint("CK_Products_Price", "[Price] > 0"));
 
-        builder.HasKey(p => p.Id);
+        builder.HasKey(product => product.Id);
 
-        builder.Property(p => p.Name)
+        builder.Property(product => product.Name)
             .IsRequired()
-            .HasMaxLength(150);
+            .HasMaxLength(100);
 
-        builder.Property(p => p.Description)
-            .HasMaxLength(500);
+        builder.HasIndex(product => product.Name)
+            .IsUnique();
 
-        builder.Property(p => p.Price)
-            .HasPrecision(18, 2);
-
-        builder.Property(p => p.IsActive)
+        builder.Property(product => product.Price)
+            .HasPrecision(18, 2)
             .IsRequired();
 
-        // Relación: cada producto pertenece a una categoría
-        builder.HasOne<Category>()
-            .WithMany()
-            .HasForeignKey(p => p.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(product => product.IsActive)
+            .IsRequired();
+
+        builder.Property(product => product.CreatedAt)
+            .IsRequired();
+
+        builder.Property(product => product.UpdatedAt)
+            .IsRequired();
     }
 }

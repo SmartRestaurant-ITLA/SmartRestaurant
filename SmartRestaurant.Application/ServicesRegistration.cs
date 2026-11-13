@@ -1,5 +1,6 @@
-Ôªøusing FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using SmartRestaurant.Application.Interfaces;
 using SmartRestaurant.Application.Interfaces.Services;
 using SmartRestaurant.Application.Services;
 using System.Reflection;
@@ -13,13 +14,16 @@ namespace SmartRestaurant.Application
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // Aqu√≠ registrar√°s los servicios de negocio conforme se vayan creando
+            // AquÌ registrar·s los servicios de negocio conforme se vayan creando
             // Ejemplo: services.AddTransient<IReservationService, ReservationService>();
             services.AddScoped<ReservationService>();
             services.AddScoped<IInventoryService, InventoryService>();
-
-            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IDailySaleService, DailySaleService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ITableService, TableService>();
+            services.AddScoped<ICategoryService, CategoryService>();
         }
     }
 }

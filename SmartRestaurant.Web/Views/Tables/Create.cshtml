@@ -1,0 +1,803 @@
+
+@model SmartRestaurant.Web.ViewModels.CreateTableViewModel
+
+@{
+    ViewData["Title"] = "Registrar nueva mesa";
+
+    var controllerName =
+        ViewData["TablesController"]?.ToString() ?? "Tables";
+
+    var initialEmpty =
+        Model.Number == 0 && ViewData.ModelState.IsValid;
+}
+
+<link rel="stylesheet"
+      href="~/css/tables.css"
+      asp-append-version="true" />
+
+<section class="tm-page">
+
+    <!-- ENCABEZADO PRINCIPAL -->
+
+    <div class="tm-breadcrumb">
+        SMARTRESTAURANT
+        <span>/</span>
+        GESTIÓN DE MESAS
+    </div>
+
+    <header class="tm-hero">
+        <div>
+            <span class="tm-hero-tag">
+                CONFIGURACIÓN DE MESAS
+            </span>
+
+            <h1>Registrar nueva mesa</h1>
+
+            <p>
+                Configura la capacidad y habilitación
+                de una mesa del restaurante.
+            </p>
+        </div>
+
+        <div class="tm-hero-icon" aria-hidden="true">
+            <svg width="30" height="30"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.7"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <rect x="5" y="7" width="14" height="10" rx="2" />
+                <path d="M9 7V4M15 7V4M9 17v3M15 17v3" />
+            </svg>
+        </div>
+    </header>
+
+    <!-- INDICADOR DE SECCIONES -->
+
+    <div class="tm-step-bar">
+        <div class="tm-step-item">
+            <span class="tm-step-number">01</span>
+            <span>Información de la mesa</span>
+        </div>
+
+        <div class="tm-step-divider"></div>
+
+        <div class="tm-step-item">
+            <span class="tm-step-number">02</span>
+            <span>Vista previa</span>
+        </div>
+
+        <span class="tm-step-caption">
+            Nuevo registro
+        </span>
+    </div>
+
+    <!-- MENSAJE DE REGISTRO EXITOSO -->
+
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success tm-alert"
+             role="status">
+            @success
+        </div>
+    }
+
+    <!-- FORMULARIO -->
+
+    <form asp-controller="@controllerName"
+          asp-action="Create"
+          method="post"
+          id="tableCreateForm">
+
+        <div asp-validation-summary="All"
+             class="alert alert-danger tm-errors"
+             role="alert">
+        </div>
+
+        <div class="row g-4 align-items-start">
+
+            <!-- COLUMNA IZQUIERDA -->
+
+            <div class="col-lg-7">
+
+                <div class="tm-panel">
+
+                    <div class="tm-panel-heading">
+
+                        <div class="tm-heading-icon">
+                            01
+                        </div>
+
+                        <div>
+                            <h2>Información general</h2>
+                            <p>
+                                Datos principales de la mesa.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="tm-panel-content">
+
+                        <!-- CAMPOS PRINCIPALES -->
+
+                        <div class="tm-field-grid">
+
+                            <!-- NÚMERO DE MESA -->
+
+                            <div class="tm-field">
+
+                                <label asp-for="Number"
+                                       class="tm-label">
+                                </label>
+
+                                <span class="tm-required">*</span>
+
+                                <input asp-for="Number"
+                                       type="number"
+                                       min="1"
+                                       step="1"
+                                       required
+                                       class="form-control tm-input"
+                                       placeholder="Ej. 5"
+                                       data-initial-empty="@initialEmpty"
+                                       aria-describedby="numberHelp" />
+
+                                <span asp-validation-for="Number"
+                                      class="text-danger small">
+                                </span>
+
+                                <small id="numberHelp"
+                                       class="tm-help">
+                                    Debe ser único dentro del restaurante.
+                                </small>
+
+                            </div>
+
+                            <!-- CAPACIDAD -->
+
+                            <div class="tm-field">
+
+                                <label asp-for="Capacity"
+                                       class="tm-label">
+                                </label>
+
+                                <span class="tm-required">*</span>
+
+                                <div class="tm-input-wrap">
+
+                                    <input asp-for="Capacity"
+                                           type="number"
+                                           min="1"
+                                           step="1"
+                                           required
+                                           class="form-control tm-input"
+                                           placeholder="Ej. 4" />
+
+                                    <span class="tm-input-suffix">
+                                        personas
+                                    </span>
+
+                                </div>
+
+                                <span asp-validation-for="Capacity"
+                                      class="text-danger small">
+                                </span>
+
+                                <small class="tm-help">
+                                    Capacidad máxima permitida.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="tm-section-separator"></div>
+
+                        <!-- CONFIGURACIÓN ADMINISTRATIVA -->
+
+                        <div class="tm-section-title">
+                            <h3>Configuración administrativa</h3>
+
+                            <p>
+                                Controla si esta mesa estará
+                                habilitada dentro del sistema.
+                            </p>
+                        </div>
+
+                        <div class="tm-status-setting">
+
+                            <div class="tm-status-icon"
+                                 aria-hidden="true">
+                                <svg width="22" height="22"
+                                     viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     stroke-width="1.8"
+                                     stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="m8 12 2.5 2.5L16 9" />
+                                </svg>
+                            </div>
+
+                            <div class="tm-status-text">
+
+                                <label for="IsActive">
+                                    Mesa habilitada
+                                </label>
+
+                                <span>
+                                    Permite su utilización
+                                    dentro del restaurante.
+                                </span>
+
+                            </div>
+
+                            <label class="tm-toggle">
+
+                                <input asp-for="IsActive"
+                                       type="checkbox"
+                                       class="tm-toggle-input"
+                                       aria-label="Habilitar mesa" />
+
+                                <span class="tm-toggle-slider"></span>
+
+                            </label>
+
+                        </div>
+
+                        <!-- NOTA DE DISPONIBILIDAD -->
+
+                        <div class="tm-info-note">
+
+                            <span class="tm-info-icon"
+                                  aria-hidden="true">
+                                i
+                            </span>
+
+                            <p>
+                                <strong>
+                                    Sobre la disponibilidad
+                                </strong>
+
+                                Una mesa activa no significa
+                                necesariamente que esté libre.
+                                Su disponibilidad se calculará
+                                según las reservas y pedidos.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- ACCIONES DEL FORMULARIO -->
+
+                    <div class="tm-panel-footer">
+
+                        <span class="tm-required-note">
+                            * Campos obligatorios
+                        </span>
+
+                        <div class="tm-actions">
+
+                            <button type="reset"
+                                    class="tm-btn tm-btn-secondary">
+                                Restablecer
+                            </button>
+
+                            <button type="submit"
+                                    class="tm-btn tm-btn-primary">
+
+                                Registrar mesa
+                                <span aria-hidden="true">+</span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA -->
+
+            <div class="col-lg-5">
+
+                <aside class="tm-panel tm-preview-panel">
+
+                    <div class="tm-panel-heading">
+
+                        <div class="tm-heading-icon">02</div>
+
+                        <div>
+                            <h2>Vista previa de la mesa</h2>
+                            <p>
+                                Configuración visual del registro.
+                            </p>
+                        </div>
+
+                        <span class="tm-live-label">
+                            Vista dinámica
+                        </span>
+
+                    </div>
+
+                    <div class="tm-panel-content">
+
+                        <!-- PLANO DE LA MESA -->
+
+                        <div class="tm-viz-card">
+
+                            <div class="tm-viz-toolbar">
+
+                                <div>
+                                    <span class="tm-viz-overline">
+                                        DISTRIBUCIÓN DE ASIENTOS
+                                    </span>
+
+                                    <span class="tm-viz-subline">
+                                        Vista superior de la mesa
+                                    </span>
+                                </div>
+
+                                <span class="tm-viz-view-tag">
+                                    Ilustrativo
+                                </span>
+
+                            </div>
+
+                            <!-- MESA Y SILLAS -->
+
+                            <div class="tm-viz-stage"
+                                 id="tableVisual"
+                                 role="img"
+                                 aria-label="Representación ilustrativa de la mesa">
+
+                                <div class="tm-viz-chair-layer"
+                                     id="chairLayer"
+                                     aria-hidden="true">
+                                </div>
+
+                                <div class="tm-viz-table"
+                                     aria-hidden="true">
+
+                                    <span class="tm-viz-table-title">
+                                        MESA
+                                    </span>
+
+                                    <strong id="previewNumber">
+                                        —
+                                    </strong>
+
+                                    <span class="tm-viz-table-subtitle">
+                                        SMARTRESTAURANT
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                            <!-- CAPACIDAD -->
+
+                            <div class="tm-viz-capacity">
+
+                                <div class="tm-viz-capacity-info">
+                                    <span>Capacidad configurada</span>
+
+                                    <strong id="previewCapacityText">
+                                        2 personas
+                                    </strong>
+                                </div>
+
+                                <div class="tm-viz-seat-count">
+
+                                    <span class="tm-viz-seat-dot"></span>
+
+                                    <span id="visualCount">
+                                        2 asientos
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                            <p class="tm-viz-caption"
+                               id="seatsCaption">
+                                Distribución ilustrativa de los asientos.
+                            </p>
+
+                        </div>
+
+                        <!-- ESTADO ADMINISTRATIVO -->
+
+                        <div class="tm-viz-status-card">
+
+                            <div class="tm-viz-status-header">
+
+                                <span>Estado administrativo</span>
+
+                                <span id="previewState"
+                                      class="tm-viz-pill tm-viz-pill-active">
+                                    Activa
+                                </span>
+
+                            </div>
+
+                            <p id="previewStateHelp">
+                                Mesa habilitada administrativamente,
+                                sujeta a las reglas de disponibilidad.
+                            </p>
+
+                        </div>
+
+                        <!-- RESUMEN -->
+
+                        <div class="tm-viz-summary">
+
+                            <h3>Resumen de configuración</h3>
+
+                            <div class="tm-viz-summary-row">
+                                <span>Número de mesa</span>
+
+                                <strong id="summaryNumber">
+                                    Sin definir
+                                </strong>
+                            </div>
+
+                            <div class="tm-viz-summary-row">
+                                <span>Capacidad máxima</span>
+
+                                <strong id="summaryCapacity">
+                                    2 personas
+                                </strong>
+                            </div>
+
+                            <div class="tm-viz-summary-row">
+                                <span>Habilitación</span>
+
+                                <strong id="summaryStatus">
+                                    Activa
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </aside>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</section>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // =====================================
+            // REFERENCIAS A LOS CAMPOS
+            // =====================================
+
+            const form =
+                document.getElementById("tableCreateForm");
+
+            const numberInput =
+                document.getElementById("Number");
+
+            const capacityInput =
+                document.getElementById("Capacity");
+
+            const activeInput =
+                document.getElementById("IsActive");
+
+            // =====================================
+            // ELEMENTOS DE LA VISTA PREVIA
+            // =====================================
+
+            const previewNumber =
+                document.getElementById("previewNumber");
+
+            const previewCapacity =
+                document.getElementById("previewCapacityText");
+
+            const previewState =
+                document.getElementById("previewState");
+
+            const previewStateHelp =
+                document.getElementById("previewStateHelp");
+
+            const summaryNumber =
+                document.getElementById("summaryNumber");
+
+            const summaryCapacity =
+                document.getElementById("summaryCapacity");
+
+            const summaryStatus =
+                document.getElementById("summaryStatus");
+
+            const chairLayer =
+                document.getElementById("chairLayer");
+
+            const visualCount =
+                document.getElementById("visualCount");
+
+            const seatsCaption =
+                document.getElementById("seatsCaption");
+
+            const tableVisual =
+                document.getElementById("tableVisual");
+
+            // =====================================
+            // ELIMINAR EL CERO INICIAL
+            // =====================================
+
+            function clearInitialNumber() {
+
+                const isInitial =
+                    numberInput.dataset.initialEmpty
+                        ?.toLowerCase() === "true";
+
+                if (isInitial && numberInput.value === "0") {
+                    numberInput.value = "";
+                }
+            }
+
+            // =====================================
+            // DISTRIBUIR LOS ASIENTOS
+            // =====================================
+
+            function distribute(count, min, max) {
+
+                if (count <= 0) {
+                    return [];
+                }
+
+                if (count === 1) {
+                    return [(min + max) / 2];
+                }
+
+                return Array.from(
+                    { length: count },
+                    (_, index) =>
+                        min +
+                        (max - min) * index / (count - 1)
+                );
+            }
+
+            function horizontalPositions(count) {
+
+                const extent =
+                    count === 1 ? 0 :
+                    count === 2 ? 9 :
+                    count === 3 ? 16 : 23;
+
+                return distribute(
+                    count,
+                    50 - extent,
+                    50 + extent
+                );
+            }
+
+            // =====================================
+            // CREAR UNA SILLA
+            // =====================================
+
+            function addChair(side, x, y) {
+
+                const chair =
+                    document.createElement("span");
+
+                chair.className =
+                    "tm-viz-chair tm-viz-chair--" + side;
+
+                chair.style.left = x + "%";
+                chair.style.top = y + "%";
+
+                chairLayer.appendChild(chair);
+            }
+
+            // =====================================
+            // DIBUJAR LAS SILLAS
+            // =====================================
+
+            function drawSeats(capacity) {
+
+                chairLayer.replaceChildren();
+
+                if (capacity <= 0) {
+
+                    visualCount.textContent =
+                        "Sin capacidad";
+
+                    seatsCaption.textContent =
+                        "Introduce una capacidad válida.";
+
+                    return;
+                }
+
+                // Máximo de 12 sillas ilustradas.
+                const shown = Math.min(capacity, 12);
+
+                // Reservar posiciones laterales
+                // para mesas de mayor capacidad.
+                const sideCount =
+                    shown >= 11 ? 2 :
+                    shown >= 5 ? 1 : 0;
+
+                const remaining =
+                    shown - sideCount * 2;
+
+                const topCount =
+                    Math.ceil(remaining / 2);
+
+                const bottomCount =
+                    Math.floor(remaining / 2);
+
+                // Sillas superiores.
+                horizontalPositions(topCount).forEach(x => {
+                    addChair("top", x, 16);
+                });
+
+                // Sillas inferiores.
+                horizontalPositions(bottomCount).forEach(x => {
+                    addChair("bottom", x, 84);
+                });
+
+                // Sillas izquierdas.
+                distribute(sideCount, 39, 61).forEach(y => {
+                    addChair("left", 15, y);
+                });
+
+                // Sillas derechas.
+                distribute(sideCount, 39, 61).forEach(y => {
+                    addChair("right", 85, y);
+                });
+
+                // Actualizar contador.
+                visualCount.textContent =
+                    capacity > 12
+                        ? `12 de ${capacity} asientos`
+                        : `${shown} ${shown === 1
+                            ? "asiento"
+                            : "asientos"}`;
+
+                seatsCaption.textContent =
+                    capacity > 12
+                        ? `Se ilustran 12 de las ${capacity} plazas configuradas.`
+                        : "Distribución ilustrativa; no representa el mobiliario real.";
+            }
+
+            // =====================================
+            // ACTUALIZAR VISTA PREVIA
+            // =====================================
+
+            function updatePreview() {
+
+                const number =
+                    Number(numberInput.value);
+
+                const capacity =
+                    Number(capacityInput.value);
+
+                const validNumber =
+                    numberInput.value.trim() !== "" &&
+                    Number.isSafeInteger(number) &&
+                    number > 0;
+
+                const validCapacity =
+                    capacityInput.value.trim() !== "" &&
+                    Number.isSafeInteger(capacity) &&
+                    capacity > 0;
+
+                const active =
+                    activeInput.checked;
+
+                const numberText =
+                    validNumber
+                        ? String(number).padStart(2, "0")
+                        : "—";
+
+                const capacityText =
+                    validCapacity
+                        ? `${capacity} ${capacity === 1
+                            ? "persona"
+                            : "personas"}`
+                        : "Sin definir";
+
+                // Número de mesa.
+                previewNumber.textContent = numberText;
+
+                summaryNumber.textContent =
+                    validNumber
+                        ? String(number)
+                        : "Sin definir";
+
+                // Capacidad.
+                previewCapacity.textContent = capacityText;
+                summaryCapacity.textContent = capacityText;
+
+                // Estado administrativo.
+                previewState.textContent =
+                    active ? "Activa" : "Inactiva";
+
+                summaryStatus.textContent =
+                    active ? "Activa" : "Inactiva";
+
+                previewState.classList.toggle(
+                    "tm-viz-pill-active",
+                    active
+                );
+
+                previewState.classList.toggle(
+                    "tm-viz-pill-inactive",
+                    !active
+                );
+
+                previewStateHelp.textContent =
+                    active
+                        ? "Mesa habilitada administrativamente, sujeta a las reglas de disponibilidad."
+                        : "Mesa deshabilitada administrativamente. No debe utilizarse para nuevas asignaciones.";
+
+                // Descripción accesible.
+                tableVisual.setAttribute(
+                    "aria-label",
+                    `Representación ilustrativa de la mesa ${
+                        validNumber ? number : "sin número"
+                    }, capacidad ${capacityText}.`
+                );
+
+                // Volver a dibujar asientos.
+                drawSeats(
+                    validCapacity ? capacity : 0
+                );
+            }
+
+            // =====================================
+            // EVENTOS DEL FORMULARIO
+            // =====================================
+
+            clearInitialNumber();
+
+            numberInput.addEventListener(
+                "input",
+                updatePreview
+            );
+
+            capacityInput.addEventListener(
+                "input",
+                updatePreview
+            );
+
+            activeInput.addEventListener(
+                "change",
+                updatePreview
+            );
+
+            form.addEventListener("reset", function () {
+
+                setTimeout(function () {
+
+                    clearInitialNumber();
+                    updatePreview();
+
+                }, 0);
+
+            });
+
+            // Vista inicial.
+            updatePreview();
+
+        });
+    </script>
+}

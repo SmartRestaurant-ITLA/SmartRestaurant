@@ -1,36 +1,30 @@
-﻿using SmartRestaurant.Domain.Common;
-using SmartRestaurant.Domain.Exceptions;
+using SmartRestaurant.Domain.Common;
 
 namespace SmartRestaurant.Domain.Entities;
 
 public class Product : BaseEntity
 {
+    private Product()
+    {
+    }
+
+    public Product(string name, decimal price)
+    {
+        SetName(name);
+        SetPrice(price);
+        IsActive = true;
+    }
+
     public string Name { get; private set; } = string.Empty;
-    public string? Description { get; private set; }
+
     public decimal Price { get; private set; }
-    public int CategoryId { get; private set; }
+
     public bool IsActive { get; private set; }
 
-    // Requerido por EF Core
-    private Product() { }
-
-    public Product(string name, string? description, decimal price, int categoryId)
+    public void Update(string name, decimal price)
     {
-        SetDetails(name, description, price, categoryId);
-        IsActive = true;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = CreatedAt;
-    }
-
-    public void UpdateDetails(string name, string? description, decimal price, int categoryId)
-    {
-        SetDetails(name, description, price, categoryId);
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void Activate()
-    {
-        IsActive = true;
+        SetName(name);
+        SetPrice(price);
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -40,19 +34,37 @@ public class Product : BaseEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    // Reglas: nombre obligatorio, precio no negativo, categoría indicada
-    private void SetDetails(string name, string? description, decimal price, int categoryId)
+    public void Activate()
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("El nombre del producto es obligatorio.");
-        if (price < 0)
-            throw new DomainException("El precio no puede ser negativo.");
-        if (categoryId <= 0)
-            throw new DomainException("Debe seleccionar una categoría.");
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-        Name = name.Trim();
-        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    private void SetName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var normalizedName = name.Trim();
+        if (normalizedName.Length > 100)
+        {
+            throw new ArgumentOutOfRangeException(nameof(name), "El nombre no puede superar 100 caracteres.");
+        }
+
+        Name = normalizedName;
+    }
+
+    private void SetPrice(decimal price)
+    {
+        if (price <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(price), "El precio debe ser mayor que cero.");
+        }
+
+        if (decimal.Round(price, 2) != price)
+        {
+            throw new ArgumentOutOfRangeException(nameof(price), "El precio no puede tener más de dos decimales.");
+        }
+
         Price = price;
-        CategoryId = categoryId;
     }
 }

@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using SmartRestaurant.Application.DTOs.Products;
 using SmartRestaurant.Application.Interfaces.Services;
-using SmartRestaurant.Domain.Entities;
-using SmartRestaurant.Domain.Exceptions;
 using SmartRestaurant.Web.ViewModels;
 
 namespace SmartRestaurant.Web.Controllers;
@@ -10,160 +9,103 @@ namespace SmartRestaurant.Web.Controllers;
 public class ProductsController : Controller
 {
     private readonly IProductService _productService;
-    private readonly ICategoryService _categoryService;
 
-    public ProductsController(IProductService productService, ICategoryService categoryService)
+    public ProductsController(IProductService productService)
     {
         _productService = productService;
-        _categoryService = categoryService;
     }
 
-    // LISTAR
-    public async Task<IActionResult> Index()
+    [HttpGet]
+    public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var products = await _productService.GetAllAsync();
-        var categoryNames = await GetCategoryNamesAsync();
-
-        var model = products.Select(p => ToListItem(p, categoryNames)).ToList();
-        return View(model);
+        var products = await _productService.GetAllAsync(includeInactive: true, ct);
+        return View(new ProductIndexViewModel { Products = products });
     }
 
-    // CONSULTAR
-    public async Task<IActionResult> Details(int id)
-    {
-        var product = await _productService.GetByIdAsync(id);
-        if (product is null) return NotFound();
+    [HttpGet]
+    public IActionResult Create() => View(new CreateProductDto());
 
-        var categoryNames = await GetCategoryNamesAsync();
-        return View(ToListItem(product, categoryNames));
-    }
-
-    // CREAR (formulario)
-    public async Task<IActionResult> Create()
-    {
-        var model = new ProductFormViewModel();
-        await LoadCategoriesAsync(model);
-        return View(model);
-    }
-
-    // CREAR (guardar)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ProductFormViewModel model)
+    public async Task<IActionResult> Create(CreateProductDto model, CancellationToken ct)
     {
         if (!ModelState.IsValid)
         {
-            await LoadCategoriesAsync(model);
             return View(model);
         }
 
         try
         {
-            await _productService.CreateAsync(model.Name, model.Description, model.Price, model.CategoryId);
-            TempData["Success"] = "Producto creado correctamente.";
+            await _productService.CreateAsync(model, ct);
+            TempData["Success"] = "Producto registrado correctamente.";
             return RedirectToAction(nameof(Index));
         }
-        catch (DomainException ex)
+        catch (ValidationException exception)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            await LoadCategoriesAsync(model);
+            AddValidationErrors(exception);
             return View(model);
         }
     }
 
-    // EDITAR (formulario)
-    public async Task<IActionResult> Edit(int id)
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id, CancellationToken ct)
     {
-        var product = await _productService.GetByIdAsync(id);
-        if (product is null) return NotFound();
-
-        var model = new ProductFormViewModel
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            Price = product.Price,
-            CategoryId = product.CategoryId
-        };
-
-        await LoadCategoriesAsync(model);
-        return View(model);
+        var model = await _productService.GetForEditAsync(id, ct);
+        return model is null ? NotFound() : View(model);
     }
 
-    // EDITAR (guardar)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, ProductFormViewModel model)
+    public async Task<IActionResult> Edit(int id, UpdateProductDto model, CancellationToken ct)
     {
-        if (id != model.Id) return BadRequest();
+        if (id != model.Id)
+        {
+            return BadRequest();
+        }
 
         if (!ModelState.IsValid)
         {
-            await LoadCategoriesAsync(model);
             return View(model);
         }
 
         try
         {
-            var updated = await _productService.UpdateAsync(id, model.Name, model.Description, model.Price, model.CategoryId);
-            if (!updated) return NotFound();
+            if (!await _productService.UpdateAsync(model, ct))
+            {
+                return NotFound();
+            }
 
             TempData["Success"] = "Producto actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
-        catch (DomainException ex)
+        catch (ValidationException exception)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            await LoadCategoriesAsync(model);
+            AddValidationErrors(exception);
             return View(model);
         }
     }
 
-    // ACTIVAR / DESACTIVAR
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ToggleActive(int id)
+    public async Task<IActionResult> SetActive(int id, bool isActive, CancellationToken ct)
     {
-        var product = await _productService.GetByIdAsync(id);
-        if (product is null) return NotFound();
+        if (!await _productService.SetActiveAsync(id, isActive, ct))
+        {
+            return NotFound();
+        }
 
-        var activar = !product.IsActive;   // se guarda ANTES de cambiarlo
+        TempData["Success"] = isActive
+            ? "Producto activado correctamente."
+            : "Producto desactivado correctamente.";
 
-        await _productService.SetActiveAsync(id, activar);
-        TempData["Success"] = activar ? "Producto activado." : "Producto desactivado.";
         return RedirectToAction(nameof(Index));
     }
 
-    // ---- Ayudantes (solo preparan datos para la vista) ----
-
-    private async Task LoadCategoriesAsync(ProductFormViewModel model)
+    private void AddValidationErrors(ValidationException exception)
     {
-        var categories = await _categoryService.GetAllAsync();
-
-        model.Categories = categories
-            .Where(c => c.IsActive)
-            .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
-            .ToList();
-    }
-
-    private async Task<Dictionary<int, string>> GetCategoryNamesAsync()
-    {
-        var categories = await _categoryService.GetAllAsync();
-        return categories.ToDictionary(c => c.Id, c => c.Name);
-    }
-
-    private static ProductListItemViewModel ToListItem(Product product, Dictionary<int, string> categoryNames)
-    {
-        return new ProductListItemViewModel
+        foreach (var error in exception.Errors)
         {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            Price = product.Price,
-            CategoryName = categoryNames.TryGetValue(product.CategoryId, out var name) ? name : "—",
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
-        };
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
     }
 }

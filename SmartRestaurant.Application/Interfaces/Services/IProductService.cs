@@ -1,16 +1,18 @@
-﻿using SmartRestaurant.Domain.Entities;
+using SmartRestaurant.Application.DTOs.Products;
 
 namespace SmartRestaurant.Application.Interfaces.Services;
 
 public interface IProductService
 {
-    // CRUD
-    Task<List<Product>> GetAllAsync();
-    Task<Product?> GetByIdAsync(int id);
-    Task<int> CreateAsync(string name, string? description, decimal price, int categoryId);
-    Task<bool> UpdateAsync(int id, string name, string? description, decimal price, int categoryId);
-    Task<bool> SetActiveAsync(int id, bool isActive);
+    Task<IReadOnlyList<ProductDto>> GetAllAsync(bool includeInactive = false, CancellationToken ct = default);
 
-    // Contrato con Pedidos: solo productos activos
-    Task<List<Product>> GetActiveAsync();
+    Task<ProductDto?> GetByIdAsync(int id, CancellationToken ct = default);
+
+    Task<UpdateProductDto?> GetForEditAsync(int id, CancellationToken ct = default);
+
+    Task<int> CreateAsync(CreateProductDto dto, CancellationToken ct = default);
+
+    Task<bool> UpdateAsync(UpdateProductDto dto, CancellationToken ct = default);
+
+    Task<bool> SetActiveAsync(int id, bool isActive, CancellationToken ct = default);
 }

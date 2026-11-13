@@ -1,0 +1,62 @@
+﻿@model SmartRestaurant.Web.Models.SalesIndexViewModel
+@{
+    ViewData["Title"] = "Ventas diarias";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Ventas diarias</h1>
+    <a asp-action="Create" class="btn btn-primary">Registrar venta</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label for="date" class="form-label">Fecha</label>
+        <input type="date" id="date" name="date" class="form-control" value="@(Model.Date?.ToString("yyyy-MM-dd"))" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+        <a asp-action="Index" class="btn btn-link">Ver todas</a>
+    </div>
+</form>
+
+@if (!Model.Sales.Any())
+{
+    <div class="alert alert-light border">No hay ventas registradas para este filtro.</div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th class="text-end">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sale in Model.Sales)
+                    {
+                        <tr>
+                            <td>@sale.SaleDate.ToString("dd/MM/yyyy")</td>
+                            <td>@sale.ProductName</td>
+                            <td class="text-end">@sale.Quantity</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="2">Total de unidades</td>
+                        <td class="text-end">@Model.TotalUnits</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}
