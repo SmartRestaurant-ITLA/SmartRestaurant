@@ -64,6 +64,9 @@ public class OrderService : IOrderService
         return ToOrderDto(order, tableNumbers);
     }
 
+    /*Cambio único: agrupar por producto en CreateAsync
+    Descripción: antes de buscar los productos, agrupa las líneas solicitadas por ProductId y suma sus cantidades, de modo que cada producto aparezca una sola vez en el pedido.
+    Luego el resto del método trabaja sobre esa lista agrupada. El nombre y el precio siguen saliendo del catálogo.*/
     public async Task<int> CreateAsync(CreateOrderDto dto, CancellationToken ct = default)
     {
         await _createValidator.ValidateAndThrowAsync(dto, ct);
@@ -77,35 +80,42 @@ public class OrderService : IOrderService
             ]);
         }
 
-        /*Cambio 4: validación en CreateAsync
-        Descripción: antes de crear el pedido, rechaza la creación si la mesa ya tiene uno abierto. 
-        Lanza ValidationException asociada al campo TableId, así que el controlador de Carlos Samuel ya la captura y la muestra en el formulario sin cambios.*/
-
+        // Una mesa solo puede tener un pedido abierto (Pending o InPreparation)
         if (await _orderRepository.HasOpenOrderForTableAsync(dto.TableId, null, ct))
         {
             throw new ValidationException(
             [
                 new ValidationFailure(
-            nameof(CreateOrderDto.TableId),
-            "La mesa ya tiene un pedido abierto.")
+                nameof(CreateOrderDto.TableId),
+                "La mesa ya tiene un pedido abierto.")
             ]);
         }
 
-        var productIds = dto.Details.Select(detail => detail.ProductId).Distinct().ToArray();
+        // Una sola línea por producto: si se repite, se suman las cantidades
+        var requestedDetails = dto.Details
+            .GroupBy(detail => detail.ProductId)
+            .Select(group => new CreateOrderDetailDto
+            {
+                ProductId = group.Key,
+                Quantity = group.Sum(detail => detail.Quantity)
+            })
+            .ToList();
+
+        var productIds = requestedDetails.Select(detail => detail.ProductId).ToArray();
         var products = await _productRepository.GetByIdsAsync(productIds, ct);
         var productsById = products.ToDictionary(product => product.Id);
-        var orderDetails = new List<OrderDetail>(dto.Details.Count);
+        var orderDetails = new List<OrderDetail>(requestedDetails.Count);
 
-        for (var index = 0; index < dto.Details.Count; index++)
+        for (var index = 0; index < requestedDetails.Count; index++)
         {
-            var requestedDetail = dto.Details[index];
+            var requestedDetail = requestedDetails[index];
             if (!productsById.TryGetValue(requestedDetail.ProductId, out var product) || !product.IsActive)
             {
                 throw new ValidationException(
                 [
                     new ValidationFailure(
-                        $"{nameof(CreateOrderDto.Details)}[{index}].{nameof(CreateOrderDetailDto.ProductId)}",
-                        "El producto seleccionado no existe o está inactivo.")
+                    $"{nameof(CreateOrderDto.Details)}[{index}].{nameof(CreateOrderDetailDto.ProductId)}",
+                    "El producto seleccionado no existe o está inactivo.")
                 ]);
             }
 
