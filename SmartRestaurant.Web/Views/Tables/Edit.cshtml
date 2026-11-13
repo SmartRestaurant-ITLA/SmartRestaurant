@@ -1,0 +1,594 @@
+
+@model SmartRestaurant.Web.ViewModels.EditTableViewModel
+
+@{
+    ViewData["Title"] = "Editar mesa";
+
+    var controllerName =
+        ViewData["TablesController"]?.ToString() ?? "Tables";
+}
+
+<link rel="stylesheet"
+      href="~/css/tables.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/tables-ui.css"
+      asp-append-version="true" />
+
+<section class="tm-page tm-edit-page">
+
+    <div class="tm-breadcrumb">
+        SMARTRESTAURANT
+        <span>/</span>
+        GESTIÓN DE MESAS
+    </div>
+
+    <!-- ENCABEZADO -->
+
+    <header class="tm-hero">
+
+        <div>
+            <span class="tm-hero-tag">
+                ADMINISTRACIÓN DE MESAS
+            </span>
+
+            <h1>Editar Mesa @Model.Number.ToString("00")</h1>
+
+            <p>
+                Actualiza la capacidad o el estado
+                administrativo de esta mesa.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Index"
+           class="tm-edit-back">
+            ← Volver al listado
+        </a>
+
+    </header>
+
+    <!-- FORMULARIO -->
+
+    <form asp-controller="@controllerName"
+          asp-action="Edit"
+          asp-route-id="@Model.Id"
+          method="post"
+          id="tableEditForm">
+
+        <input asp-for="Id" type="hidden" />
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All"
+                 class="alert alert-danger tm-edit-errors"
+                 role="alert">
+            </div>
+        }
+
+        <div class="row g-4 align-items-start">
+
+            <!-- DATOS -->
+
+            <div class="col-lg-7">
+
+                <div class="tm-panel">
+
+                    <div class="tm-panel-heading">
+
+                        <div class="tm-heading-icon">01</div>
+
+                        <div>
+                            <h2>Configuración de la mesa</h2>
+                            <p>Modifica los datos permitidos.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="tm-panel-content">
+
+                        <!-- NÚMERO -->
+
+                        <div class="tm-edit-field">
+
+                            <label asp-for="Number"
+                                   class="tm-label">
+                            </label>
+
+                            <input asp-for="Number"
+                                   class="form-control tm-input tm-edit-readonly"
+                                   type="number"
+                                   readonly />
+
+                            <small class="tm-help">
+                                El número se mantiene para conservar
+                                el identificador actual de la mesa.
+                            </small>
+
+                        </div>
+
+                        <!-- CAPACIDAD -->
+
+                        <div class="tm-edit-field">
+
+                            <label asp-for="Capacity"
+                                   class="tm-label">
+                            </label>
+
+                            <span class="tm-required">*</span>
+
+                            <div class="tm-input-wrap">
+
+                                <input asp-for="Capacity"
+                                       type="number"
+                                       min="1"
+                                       step="1"
+                                       required
+                                       class="form-control tm-input" />
+
+                                <span class="tm-input-suffix">
+                                    personas
+                                </span>
+
+                            </div>
+
+                            <span asp-validation-for="Capacity"
+                                  class="text-danger small">
+                            </span>
+
+                            <small class="tm-help">
+                                Modifica la capacidad máxima
+                                que admite la mesa.
+                            </small>
+
+                        </div>
+
+                        <div class="tm-section-separator"></div>
+
+                        <!-- HABILITACIÓN -->
+
+                        <div class="tm-section-title">
+
+                            <h3>Estado administrativo</h3>
+
+                            <p>
+                                Configura si esta mesa se
+                                encuentra habilitada.
+                            </p>
+
+                        </div>
+
+                        <div class="tm-status-setting">
+
+                            <div class="tm-status-icon"
+                                 aria-hidden="true">
+                                ✓
+                            </div>
+
+                            <div class="tm-status-text">
+
+                                <label for="IsActive">
+                                    Mesa habilitada
+                                </label>
+
+                                <span>
+                                    Se aplicará el estado
+                                    seleccionado al guardar.
+                                </span>
+
+                            </div>
+
+                            <label class="tm-toggle">
+
+                                <input asp-for="IsActive"
+                                       type="checkbox"
+                                       class="tm-toggle-input" />
+
+                                <span class="tm-toggle-slider"></span>
+
+                            </label>
+
+                        </div>
+
+                        <div class="tm-edit-warning">
+
+                            <span class="tm-info-icon"
+                                  aria-hidden="true">
+                                i
+                            </span>
+
+                            <div>
+                                <strong>Antes de guardar</strong>
+
+                                <p>
+                                    Los cambios de capacidad y
+                                    habilitación podrían afectar
+                                    futuras asignaciones de mesas.
+                                    Las reglas definitivas serán
+                                    validadas por el backend.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="tm-panel-footer">
+
+                        <span class="tm-required-note">
+                            Editando Mesa @Model.Number
+                        </span>
+
+                        <div class="tm-actions">
+
+                            <a asp-controller="@controllerName"
+                               asp-action="Index"
+                               class="tm-btn tm-btn-secondary">
+                                Cancelar
+                            </a>
+
+                            <button type="submit"
+                                    class="tm-btn tm-btn-primary">
+                                Guardar cambios
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- VISTA PREVIA -->
+
+            <div class="col-lg-5">
+
+                <aside class="tm-panel tm-preview-panel">
+
+                    <div class="tm-panel-heading">
+
+                        <div class="tm-heading-icon">02</div>
+
+                        <div>
+                            <h2>Vista previa de cambios</h2>
+                            <p>Configuración actualizada.</p>
+                        </div>
+
+                        <span class="tm-live-label">
+                            Vista dinámica
+                        </span>
+
+                    </div>
+
+                    <div class="tm-panel-content">
+
+                        <div class="tm-viz-card">
+
+                            <div class="tm-viz-toolbar">
+
+                                <div>
+                                    <span class="tm-viz-overline">
+                                        DISTRIBUCIÓN DE ASIENTOS
+                                    </span>
+
+                                    <span class="tm-viz-subline">
+                                        Vista superior
+                                    </span>
+                                </div>
+
+                                <span class="tm-viz-view-tag">
+                                    Ilustrativo
+                                </span>
+
+                            </div>
+
+                            <!-- PLANO -->
+
+                            <div class="tm-viz-stage"
+                                 id="editTableVisual"
+                                 role="img"
+                                 aria-label="Representación de la mesa">
+
+                                <div class="tm-viz-chair-layer"
+                                     id="editChairLayer"
+                                     aria-hidden="true">
+                                </div>
+
+                                <div class="tm-viz-table"
+                                     aria-hidden="true">
+
+                                    <span class="tm-viz-table-title">
+                                        MESA
+                                    </span>
+
+                                    <strong>
+                                        @Model.Number.ToString("00")
+                                    </strong>
+
+                                    <span class="tm-viz-table-subtitle">
+                                        SMARTRESTAURANT
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                            <div class="tm-viz-capacity">
+
+                                <div class="tm-viz-capacity-info">
+                                    <span>Capacidad</span>
+
+                                    <strong id="editCapacityText">
+                                        @Model.Capacity personas
+                                    </strong>
+                                </div>
+
+                                <div class="tm-viz-seat-count">
+                                    <span class="tm-viz-seat-dot"></span>
+
+                                    <span id="editVisualCount">
+                                        @Model.Capacity asientos
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <p class="tm-viz-caption"
+                               id="editSeatsCaption">
+                                Distribución ilustrativa de asientos.
+                            </p>
+
+                        </div>
+
+                        <!-- ESTADO -->
+
+                        <div class="tm-viz-status-card">
+
+                            <div class="tm-viz-status-header">
+
+                                <span>Estado administrativo</span>
+
+                                <span id="editPreviewState"
+                                      class="tm-viz-pill @(Model.IsActive ? "tm-viz-pill-active" : "tm-viz-pill-inactive")">
+                                    @(Model.IsActive ? "Activa" : "Inactiva")
+                                </span>
+
+                            </div>
+
+                            <p id="editStateHelp">
+                                El estado seleccionado se
+                                aplicará al guardar los cambios.
+                            </p>
+
+                        </div>
+
+                        <!-- RESUMEN -->
+
+                        <div class="tm-viz-summary">
+
+                            <h3>Resumen de cambios</h3>
+
+                            <div class="tm-viz-summary-row">
+                                <span>Mesa</span>
+                                <strong>
+                                    @Model.Number.ToString("00")
+                                </strong>
+                            </div>
+
+                            <div class="tm-viz-summary-row">
+                                <span>Capacidad</span>
+                                <strong id="editSummaryCapacity">
+                                    @Model.Capacity personas
+                                </strong>
+                            </div>
+
+                            <div class="tm-viz-summary-row">
+                                <span>Habilitación</span>
+                                <strong id="editSummaryStatus">
+                                    @(Model.IsActive ? "Activa" : "Inactiva")
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </aside>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</section>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const capacityInput =
+                document.getElementById("Capacity");
+
+            const activeInput =
+                document.getElementById("IsActive");
+
+            const chairLayer =
+                document.getElementById("editChairLayer");
+
+            const countText =
+                document.getElementById("editVisualCount");
+
+            const capacityText =
+                document.getElementById("editCapacityText");
+
+            const summaryCapacity =
+                document.getElementById("editSummaryCapacity");
+
+            const previewState =
+                document.getElementById("editPreviewState");
+
+            const summaryStatus =
+                document.getElementById("editSummaryStatus");
+
+            const stateHelp =
+                document.getElementById("editStateHelp");
+
+            const caption =
+                document.getElementById("editSeatsCaption");
+
+            const visual =
+                document.getElementById("editTableVisual");
+
+            function distribute(count, min, max) {
+
+                if (count <= 0) return [];
+
+                if (count === 1) {
+                    return [(min + max) / 2];
+                }
+
+                return Array.from(
+                    { length: count },
+                    (_, i) => min +
+                        (max - min) * i / (count - 1)
+                );
+            }
+
+            function horizontal(count) {
+
+                const extent =
+                    count === 1 ? 0 :
+                    count === 2 ? 9 :
+                    count === 3 ? 16 : 23;
+
+                return distribute(
+                    count,
+                    50 - extent,
+                    50 + extent
+                );
+            }
+
+            function drawChairs(capacity) {
+
+                chairLayer.replaceChildren();
+
+                if (capacity <= 0) {
+                    countText.textContent = "Sin capacidad";
+                    caption.textContent =
+                        "Introduce una capacidad válida.";
+                    return;
+                }
+
+                const shown = Math.min(capacity, 12);
+
+                const sides =
+                    shown >= 11 ? 2 :
+                    shown >= 5 ? 1 : 0;
+
+                const rest = shown - sides * 2;
+
+                function add(side, x, y) {
+
+                    const chair =
+                        document.createElement("span");
+
+                    chair.className =
+                        "tm-viz-chair tm-viz-chair--" + side;
+
+                    chair.style.left = x + "%";
+                    chair.style.top = y + "%";
+
+                    chairLayer.appendChild(chair);
+                }
+
+                horizontal(Math.ceil(rest / 2)).forEach(x =>
+                    add("top", x, 16)
+                );
+
+                horizontal(Math.floor(rest / 2)).forEach(x =>
+                    add("bottom", x, 84)
+                );
+
+                distribute(sides, 39, 61).forEach(y =>
+                    add("left", 15, y)
+                );
+
+                distribute(sides, 39, 61).forEach(y =>
+                    add("right", 85, y)
+                );
+
+                countText.textContent =
+                    capacity > 12
+                        ? `12 de ${capacity} asientos`
+                        : `${shown} ${shown === 1 ? "asiento" : "asientos"}`;
+
+                caption.textContent =
+                    capacity > 12
+                        ? `Se ilustran 12 de ${capacity} plazas.`
+                        : "Distribución ilustrativa; no es el mobiliario real.";
+            }
+
+            function updatePreview() {
+
+                const capacity = Number(capacityInput.value);
+
+                const valid =
+                    capacityInput.value.trim() !== "" &&
+                    Number.isSafeInteger(capacity) &&
+                    capacity > 0;
+
+                const text = valid
+                    ? `${capacity} ${capacity === 1 ? "persona" : "personas"}`
+                    : "Sin definir";
+
+                const active = activeInput.checked;
+
+                capacityText.textContent = text;
+                summaryCapacity.textContent = text;
+
+                previewState.textContent =
+                    active ? "Activa" : "Inactiva";
+
+                summaryStatus.textContent =
+                    active ? "Activa" : "Inactiva";
+
+                previewState.classList.toggle(
+                    "tm-viz-pill-active", active
+                );
+
+                previewState.classList.toggle(
+                    "tm-viz-pill-inactive", !active
+                );
+
+                stateHelp.textContent = active
+                    ? "Mesa habilitada administrativamente, sujeta a disponibilidad."
+                    : "Mesa deshabilitada administrativamente.";
+
+                visual.setAttribute(
+                    "aria-label",
+                    `Mesa con capacidad ${text}, estado ${
+                        active ? "activo" : "inactivo"
+                    }.`
+                );
+
+                drawChairs(valid ? capacity : 0);
+            }
+
+            capacityInput.addEventListener(
+                "input", updatePreview
+            );
+
+            activeInput.addEventListener(
+                "change", updatePreview
+            );
+
+            updatePreview();
+        });
+    </script>
+}
