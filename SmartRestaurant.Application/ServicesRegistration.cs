@@ -23,6 +23,7 @@ namespace SmartRestaurant.Application
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<ITableService, TableService>();
+            services.AddScoped<ICategoryService, CategoryService>();
         }
     }
 }

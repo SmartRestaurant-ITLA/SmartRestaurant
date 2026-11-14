@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SmartRestaurant.Application.DTOs.Products;
 using SmartRestaurant.Application.Interfaces.Services;
 using SmartRestaurant.Web.ViewModels;
@@ -9,10 +10,12 @@ namespace SmartRestaurant.Web.Controllers;
 public class ProductsController : Controller
 {
     private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;   // Catálogo (César)
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, ICategoryService categoryService)
     {
         _productService = productService;
+        _categoryService = categoryService;
     }
 
     [HttpGet]
@@ -22,8 +25,20 @@ public class ProductsController : Controller
         return View(new ProductIndexViewModel { Products = products });
     }
 
+    // Catálogo (César): consultar un producto
     [HttpGet]
-    public IActionResult Create() => View(new CreateProductDto());
+    public async Task<IActionResult> Details(int id, CancellationToken ct)
+    {
+        var product = await _productService.GetByIdAsync(id, ct);
+        return product is null ? NotFound() : View(product);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        await LoadCategoriesAsync();
+        return View(new CreateProductDto());
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -31,6 +46,7 @@ public class ProductsController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await LoadCategoriesAsync();
             return View(model);
         }
 
@@ -43,6 +59,7 @@ public class ProductsController : Controller
         catch (ValidationException exception)
         {
             AddValidationErrors(exception);
+            await LoadCategoriesAsync();
             return View(model);
         }
     }
@@ -51,7 +68,13 @@ public class ProductsController : Controller
     public async Task<IActionResult> Edit(int id, CancellationToken ct)
     {
         var model = await _productService.GetForEditAsync(id, ct);
-        return model is null ? NotFound() : View(model);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        await LoadCategoriesAsync();
+        return View(model);
     }
 
     [HttpPost]
@@ -65,6 +88,7 @@ public class ProductsController : Controller
 
         if (!ModelState.IsValid)
         {
+            await LoadCategoriesAsync();
             return View(model);
         }
 
@@ -81,6 +105,7 @@ public class ProductsController : Controller
         catch (ValidationException exception)
         {
             AddValidationErrors(exception);
+            await LoadCategoriesAsync();
             return View(model);
         }
     }
@@ -99,6 +124,16 @@ public class ProductsController : Controller
             : "Producto desactivado correctamente.";
 
         return RedirectToAction(nameof(Index));
+    }
+
+    // Catálogo (César): categorías activas para el desplegable
+    private async Task LoadCategoriesAsync()
+    {
+        var categories = await _categoryService.GetAllAsync();
+        ViewData["Categories"] = categories
+            .Where(category => category.IsActive)
+            .Select(category => new SelectListItem(category.Name, category.Id.ToString()))
+            .ToList();
     }
 
     private void AddValidationErrors(ValidationException exception)

@@ -1,0 +1,94 @@
+﻿@model SmartRestaurant.Domain.Entities.Category
+@{
+    ViewData["Title"] = "Detalles de la categoría";
+    var estadoClase = Model.IsActive ? "sr-status-confirmed" : "sr-status-cancelled";
+    var estadoTexto = Model.IsActive ? "Activa" : "Inactiva";
+}
+
+<link rel="stylesheet" href="~/css/reservations.css" asp-append-version="true" />
+
+<section class="sr-page sr-create sr-details-page py-4">
+
+    <div class="sr-header mb-4">
+        <div>
+            <p class="sr-eyebrow mb-2">SMARTRESTAURANT / CATEGORÍAS</p>
+            <h1 class="sr-title">Detalles de la categoría</h1>
+            <p class="sr-subtitle mb-0">Consulta la información de la categoría #@Model.Id.</p>
+        </div>
+
+        <a asp-action="Index" class="btn sr-back-btn">&larr; Volver a categorías</a>
+    </div>
+
+    <div class="sr-details-grid">
+
+        <article class="sr-form-panel">
+            <div class="sr-panel-header">
+                <div>
+                    <h2>Información de la categoría</h2>
+                    <p>Datos registrados en el sistema.</p>
+                </div>
+                <span class="sr-status @estadoClase">@estadoTexto</span>
+            </div>
+
+            <div class="sr-panel-body">
+                <dl class="sr-detail-list">
+                    <div class="sr-detail-item">
+                        <dt>ID de categoría</dt>
+                        <dd>#@Model.Id</dd>
+                    </div>
+                    <div class="sr-detail-item">
+                        <dt>Nombre</dt>
+                        <dd>@Model.Name</dd>
+                    </div>
+                    <div class="sr-detail-item">
+                        <dt>Estado</dt>
+                        <dd><span class="sr-status @estadoClase">@estadoTexto</span></dd>
+                    </div>
+                    <div class="sr-detail-item">
+                        <dt>Fecha de creación</dt>
+                        <dd>@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                    </div>
+                    <div class="sr-detail-item">
+                        <dt>Última actualización</dt>
+                        <dd>@Model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                    </div>
+                </dl>
+
+                <div class="sr-form-divider"></div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary sr-primary-btn">Editar categoría</a>
+                    <a asp-action="Index" class="btn sr-back-btn">Volver al listado</a>
+                </div>
+            </div>
+        </article>
+
+        <aside class="sr-details-side">
+            <div class="sr-form-panel">
+                <div class="sr-panel-header">
+                    <div>
+                        <h2>Resumen</h2>
+                        <p>Información principal.</p>
+                    </div>
+                </div>
+
+                <div class="sr-panel-body">
+                    <div class="sr-detail-highlight">
+                        <span>Categoría</span>
+                        <strong>@Model.Name</strong>
+                    </div>
+                    <div class="sr-summary-line">
+                        <span>Estado</span>
+                        <strong>@estadoTexto</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sr-information mt-3">
+                <strong>Información importante</strong>
+                <p>Una categoría inactiva no se puede asignar a productos nuevos.</p>
+            </div>
+        </aside>
+
+    </div>
+</section>

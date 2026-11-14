@@ -32,5 +32,14 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(product => product.UpdatedAt)
             .IsRequired();
+
+        // Catálogo (César): descripción opcional y categoría
+        builder.Property(product => product.Description)
+            .HasMaxLength(500);
+
+        builder.HasOne<Category>()
+            .WithMany()
+            .HasForeignKey(product => product.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
