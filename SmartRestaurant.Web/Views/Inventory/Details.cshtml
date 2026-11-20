@@ -1,0 +1,363 @@
+
+@model SmartRestaurant.Application.DTOs.Inventory.InventoryItemDto
+@using SmartRestaurant.Domain.Enums
+@using System.Linq
+
+@{
+
+    ViewData["Title"] = "Detalles del insumo";
+
+    var controllerName =
+        ViewData["InventoryController"]?.ToString()
+        ?? "Inventory";
+
+    var categoryName = Html.GetEnumSelectList<InventoryCategory>()
+        .FirstOrDefault(c =>
+            c.Value == ((int)Model.Category).ToString())?.Text
+        ?? Model.Category.ToString();
+
+    var unitName = Html.GetEnumSelectList<UnitOfMeasure>()
+        .FirstOrDefault(u =>
+            u.Value == ((int)Model.Unit).ToString())?.Text
+        ?? Model.Unit.ToString();
+
+    var totalValue = Model.CurrentStock * Model.UnitCost;
+
+    var success = TempData["Success"] as string;
+}
+
+<link rel="stylesheet"
+      href="~/css/inventory.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-pages.css"
+      asp-append-version="true" />
+
+<section class="inv-page">
+
+    <!-- NAVEGACIÓN -->
+    <div class="inv-breadcrumb">
+        SMARTRESTAURANT / INVENTARIO
+    </div>
+
+    <header class="inv-header">
+        <div>
+            <span class="inv-overline">
+                CONSULTA DE INVENTARIO
+            </span>
+
+            <h1>Detalles del insumo</h1>
+
+            <p>
+                Información registrada del insumo #@Model.Id.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Index"
+           class="inv-secondary-button">
+            ← Volver al inventario
+        </a>
+    </header>
+
+    <!-- CONFIRMACIÓN -->
+    @if (!string.IsNullOrWhiteSpace(success))
+    {
+        <div class="inv-notice" role="status">
+            <span class="inv-notice-check">✓</span>
+
+            <div>
+                <strong>Operación realizada</strong>
+                <p>@success</p>
+            </div>
+        </div>
+    }
+
+    <!-- RESUMEN PRINCIPAL -->
+    <div class="inv-detail-hero">
+
+        <div class="inv-detail-hero-icon">
+            <svg width="33" height="33"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.6"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+                <path d="M3 8v9l9 5 9-5V8" />
+                <path d="M12 13v9" />
+            </svg>
+        </div>
+
+        <div class="inv-detail-hero-content">
+            <span>INSUMO REGISTRADO</span>
+
+            <h2>@Model.Name</h2>
+
+            <p>@categoryName</p>
+        </div>
+
+        <span class="inv-status-badge @(Model.IsActive ? "inv-status-active" : "inv-status-inactive")">
+            @(Model.IsActive ? "Activo" : "Inactivo")
+        </span>
+
+    </div>
+
+    <!-- INDICADORES -->
+    <div class="inv-metrics">
+
+        <div class="inv-metric">
+            <span>Stock actual</span>
+
+            <strong>@Model.CurrentStock.ToString("N2")</strong>
+
+            <small>@unitName</small>
+        </div>
+
+        <div class="inv-metric">
+            <span>Stock mínimo</span>
+
+            <strong>@Model.MinimumStock.ToString("N2")</strong>
+
+            <small>@unitName</small>
+        </div>
+
+        <div class="inv-metric">
+            <span>Costo unitario</span>
+
+            <strong>
+                RD$ @Model.UnitCost.ToString("N2")
+            </strong>
+
+            <small>Por unidad de medida</small>
+        </div>
+
+        <div class="inv-metric">
+            <span>Valor estimado</span>
+
+            <strong>
+                RD$ @totalValue.ToString("N2")
+            </strong>
+
+            <small>Stock actual × costo unitario</small>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- INFORMACIÓN GENERAL -->
+        <div class="col-lg-7">
+
+            <article class="inv-panel inv-detail-panel">
+
+                <div class="inv-panel-head">
+                    <span class="inv-section-number">01</span>
+
+                    <div>
+                        <h2>Información general</h2>
+                        <p>Datos del insumo registrado.</p>
+                    </div>
+                </div>
+
+                <div class="inv-panel-body">
+
+                    <div class="inv-data-row">
+                        <span>ID del insumo</span>
+                        <strong>#@Model.Id</strong>
+                    </div>
+
+                    <div class="inv-data-row">
+                        <span>Nombre</span>
+                        <strong>@Model.Name</strong>
+                    </div>
+
+                    <div class="inv-data-row">
+                        <span>Categoría</span>
+                        <strong>@categoryName</strong>
+                    </div>
+
+                    <div class="inv-data-row">
+                        <span>Unidad de medida</span>
+                        <strong>@unitName</strong>
+                    </div>
+
+                    <div class="inv-data-row">
+                        <span>Fecha de vencimiento</span>
+
+                        <strong>
+                            @(Model.ExpirationDate.HasValue
+                                ? Model.ExpirationDate.Value.ToString("dd/MM/yyyy")
+                                : "No especificada")
+                        </strong>
+                    </div>
+
+                    <div class="inv-description">
+                        <span>Descripción</span>
+
+                        <p>
+                            @(string.IsNullOrWhiteSpace(Model.Description)
+                                ? "No se agregó una descripción."
+                                : Model.Description)
+                        </p>
+                    </div>
+
+                </div>
+
+            </article>
+
+        </div>
+
+        <!-- ESTADOS Y ALERTAS -->
+        <div class="col-lg-5">
+
+            <article class="inv-panel inv-detail-panel">
+
+                <div class="inv-panel-head">
+                    <span class="inv-section-number">02</span>
+
+                    <div>
+                        <h2>Estado del inventario</h2>
+                        <p>Indicadores de existencias y vencimiento.</p>
+                    </div>
+                </div>
+
+                <div class="inv-panel-body">
+
+                    <!-- EXISTENCIAS -->
+                    <div class="inv-alert-item">
+
+                        <span class="inv-alert-title">
+                            Nivel de existencias
+                        </span>
+
+                        @if (Model.IsLowStock)
+                        {
+                            <span class="inv-status-badge inv-status-warning">
+                                Stock bajo
+                            </span>
+
+                            <p>
+                                Las existencias están en el
+                                nivel mínimo o por debajo.
+                            </p>
+                        }
+                        else
+                        {
+                            <span class="inv-status-badge inv-status-active">
+                                Stock adecuado
+                            </span>
+
+                            <p>
+                                Las existencias superan
+                                el nivel mínimo configurado.
+                            </p>
+                        }
+
+                    </div>
+
+                    <div class="inv-detail-divider"></div>
+
+                    <!-- VENCIMIENTO -->
+                    <div class="inv-alert-item">
+
+                        <span class="inv-alert-title">
+                            Estado de vencimiento
+                        </span>
+
+                        @if (Model.IsExpired)
+                        {
+                            <span class="inv-status-badge inv-status-danger">
+                                Vencido
+                            </span>
+
+                            <p>
+                                El insumo tiene una fecha de
+                                vencimiento anterior a hoy.
+                            </p>
+                        }
+                        else if (Model.IsNearExpiration)
+                        {
+                            <span class="inv-status-badge inv-status-warning">
+                                Próximo a vencer
+                            </span>
+
+                            <p>
+                                El insumo se encuentra dentro
+                                del período de alerta de vencimiento.
+                            </p>
+                        }
+                        else if (Model.ExpirationDate.HasValue)
+                        {
+                            <span class="inv-status-badge inv-status-active">
+                                Sin alerta de vencimiento
+                            </span>
+
+                            <p>
+                                No presenta una alerta de
+                                vencimiento actualmente.
+                            </p>
+                        }
+                        else
+                        {
+                            <span class="inv-status-badge inv-status-neutral">
+                                Sin fecha registrada
+                            </span>
+
+                            <p>
+                                Este insumo no tiene una fecha
+                                de vencimiento especificada.
+                            </p>
+                        }
+
+                    </div>
+
+                    <div class="inv-detail-divider"></div>
+
+                    <!-- ESTADO ADMINISTRATIVO -->
+                    <div class="inv-alert-item">
+
+                        <span class="inv-alert-title">
+                            Estado administrativo
+                        </span>
+
+                        <span class="inv-status-badge @(Model.IsActive ? "inv-status-active" : "inv-status-inactive")">
+                            @(Model.IsActive ? "Activo" : "Inactivo")
+                        </span>
+
+                        <p>
+                            Indica si el insumo se encuentra
+                            habilitado administrativamente.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </div>
+
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="inv-detail-actions">
+
+        <a asp-controller="@controllerName"
+           asp-action="Index"
+           class="inv-secondary-button">
+            Volver al listado
+        </a>
+
+        <a asp-controller="@controllerName"
+           asp-action="Edit"
+           asp-route-id="@Model.Id"
+           class="inv-primary-button">
+            Editar insumo
+        </a>
+
+    </div>
+
+</section>

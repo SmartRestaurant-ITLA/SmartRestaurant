@@ -1,0 +1,615 @@
+
+@model IReadOnlyList<SmartRestaurant.Application.DTOs.Inventory.InventoryItemDto>
+@using SmartRestaurant.Domain.Enums
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Gestión de Inventario";
+
+    var controllerName =
+        ViewData["InventoryController"]?.ToString() ?? "Inventory";
+
+    var items = Model ??
+        Array.Empty<SmartRestaurant.Application.DTOs.Inventory.InventoryItemDto>();
+
+    var categories =
+        Html.GetEnumSelectList<InventoryCategory>().ToList();
+
+    var units =
+        Html.GetEnumSelectList<UnitOfMeasure>().ToList();
+
+    var total = items.Count;
+    var lowStock = items.Count(x => x.IsLowStock);
+    var nearExpiration = items.Count(x =>
+        x.IsNearExpiration && !x.IsExpired);
+    var expired = items.Count(x => x.IsExpired);
+
+    var success = TempData["Success"] as string;
+}
+
+<link rel="stylesheet"
+      href="~/css/inventory.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-pages.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-list.css"
+      asp-append-version="true" />
+
+<section class="inv-page inv-list-page">
+
+    <!-- ENCABEZADO -->
+
+    <div class="inv-breadcrumb">
+        SMARTRESTAURANT / ADMINISTRACIÓN
+    </div>
+
+    <header class="inv-list-header">
+
+        <div>
+            <span class="inv-overline">
+                CONTROL DE EXISTENCIAS
+            </span>
+
+            <h1>Gestión de inventario</h1>
+
+            <p>
+                Administra los insumos y consulta
+                sus existencias, costos y vencimientos.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Create"
+           class="inv-primary-button">
+
+            <span aria-hidden="true">+</span>
+            Nuevo insumo
+        </a>
+
+    </header>
+
+    <!-- MENSAJES -->
+
+    @if (!string.IsNullOrWhiteSpace(success))
+    {
+        <div class="inv-notice" id="inventoryNotice"
+             role="status">
+
+            <span class="inv-notice-check">✓</span>
+
+            <div>
+                <strong>Operación realizada</strong>
+                <p>@success</p>
+            </div>
+
+            <button type="button"
+                    id="dismissNotice"
+                    class="inv-l-notice-close"
+                    aria-label="Cerrar notificación">
+                ×
+            </button>
+
+        </div>
+    }
+
+    <!-- ESTADÍSTICAS -->
+
+    <div class="inv-l-stats">
+
+        <article class="inv-l-stat">
+
+            <div class="inv-l-stat-top">
+                <span>Insumos listados</span>
+                <span class="inv-l-stat-icon inv-l-blue">#</span>
+            </div>
+
+            <strong>@total</strong>
+            <small>Registros obtenidos</small>
+
+        </article>
+
+        <article class="inv-l-stat">
+
+            <div class="inv-l-stat-top">
+                <span>Stock bajo</span>
+                <span class="inv-l-stat-icon inv-l-amber">!</span>
+            </div>
+
+            <strong>@lowStock</strong>
+            <small>En el mínimo o por debajo</small>
+
+        </article>
+
+        <article class="inv-l-stat">
+
+            <div class="inv-l-stat-top">
+                <span>Próximos a vencer</span>
+                <span class="inv-l-stat-icon inv-l-orange">◷</span>
+            </div>
+
+            <strong>@nearExpiration</strong>
+            <small>Dentro del período de alerta</small>
+
+        </article>
+
+        <article class="inv-l-stat">
+
+            <div class="inv-l-stat-top">
+                <span>Vencidos</span>
+                <span class="inv-l-stat-icon inv-l-red">×</span>
+            </div>
+
+            <strong>@expired</strong>
+            <small>Fecha de vencimiento pasada</small>
+
+        </article>
+
+    </div>
+
+    <!-- LISTADO -->
+
+    <div class="inv-l-panel">
+
+        <div class="inv-l-panel-header">
+
+            <div>
+                <h2>Listado de insumos</h2>
+                <p>
+                    Existencias y estado de los productos
+                    almacenados.
+                </p>
+            </div>
+
+            <span class="inv-l-count">
+                @total registros
+            </span>
+
+        </div>
+
+        <!-- FILTROS -->
+
+        <div class="inv-l-toolbar">
+
+            <div class="inv-l-filter inv-l-search">
+
+                <label for="inventorySearch">
+                    Buscar insumo
+                </label>
+
+                <input type="search"
+                       id="inventorySearch"
+                       placeholder="Nombre o categoría..."
+                       autocomplete="off" />
+
+            </div>
+
+            <div class="inv-l-filter">
+
+                <label for="inventoryCategory">
+                    Categoría
+                </label>
+
+                <select id="inventoryCategory">
+                    <option value="">Todas las categorías</option>
+
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Value">
+                            @category.Text
+                        </option>
+                    }
+                </select>
+
+            </div>
+
+            <div class="inv-l-filter">
+
+                <label for="inventoryAlert">
+                    Estado del inventario
+                </label>
+
+                <select id="inventoryAlert">
+                    <option value="all">Todos</option>
+                    <option value="low">Stock bajo</option>
+                    <option value="near">Próximos a vencer</option>
+                    <option value="expired">Vencidos</option>
+                    <option value="normal">Sin alertas</option>
+                </select>
+
+            </div>
+
+            <button type="button"
+                    id="clearInventoryFilters"
+                    class="inv-l-clear">
+                Limpiar filtros
+            </button>
+
+        </div>
+
+        <!-- TABLA DE INSUMOS -->
+
+        @if (items.Count == 0)
+        {
+            <div class="inv-l-empty">
+
+                <span class="inv-l-empty-icon"
+                      aria-hidden="true">▣</span>
+
+                <h3>No hay insumos para mostrar</h3>
+
+                <p>
+                    Todavía no existen insumos registrados
+                    o no hay coincidencias con la consulta.
+                </p>
+
+                <a asp-controller="@controllerName"
+                   asp-action="Create"
+                   class="inv-primary-button">
+
+                    Registrar insumo
+                </a>
+
+            </div>
+        }
+        else
+        {
+            <div class="inv-l-table-wrap">
+
+                <table class="inv-l-table">
+
+                    <thead>
+                        <tr>
+                            <th>Insumo</th>
+                            <th>Existencias</th>
+                            <th>Costo unitario</th>
+                            <th>Stock</th>
+                            <th>Vencimiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in items)
+                        {
+                            var categoryLabel = categories
+                                .FirstOrDefault(x =>
+                                    x.Value == ((int)item.Category).ToString())
+                                ?.Text ?? item.Category.ToString();
+
+                            var unitLabel = units
+                                .FirstOrDefault(x =>
+                                    x.Value == ((int)item.Unit).ToString())
+                                ?.Text ?? item.Unit.ToString();
+
+                            <tr class="inv-l-row"
+                                data-name="@item.Name"
+                                data-category="@((int)item.Category)"
+                                data-category-label="@categoryLabel"
+                                data-low="@(item.IsLowStock ? "true" : "false")"
+                                data-near="@(item.IsNearExpiration ? "true" : "false")"
+                                data-expired="@(item.IsExpired ? "true" : "false")">
+
+                                <!-- INSUMO -->
+
+                                <td>
+
+                                    <div class="inv-l-product">
+
+                                        <span class="inv-l-product-icon"
+                                              aria-hidden="true">
+                                            ▣
+                                        </span>
+
+                                        <div>
+                                            <strong>@item.Name</strong>
+                                            <small>@categoryLabel</small>
+                                            <small>ID #@item.Id</small>
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- EXISTENCIAS -->
+
+                                <td>
+
+                                    <div class="inv-l-quantity">
+
+                                        <strong>
+                                            @item.CurrentStock.ToString("N2")
+                                        </strong>
+
+                                        <span>@unitLabel</span>
+
+                                        <small>
+                                            Mínimo:
+                                            @item.MinimumStock.ToString("N2")
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- COSTO -->
+
+                                <td>
+                                    <strong class="inv-l-cost">
+                                        RD$ @item.UnitCost.ToString("N2")
+                                    </strong>
+                                </td>
+
+                                <!-- STOCK -->
+
+                                <td>
+
+                                    @if (item.IsLowStock)
+                                    {
+                                        <span class="inv-status-badge inv-status-warning">
+                                            Stock bajo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inv-status-badge inv-status-active">
+                                            Adecuado
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- VENCIMIENTO -->
+
+                                <td>
+
+                                    <div class="inv-l-expiration">
+
+                                        @if (item.IsExpired)
+                                        {
+                                            <span class="inv-status-badge inv-status-danger">
+                                                Vencido
+                                            </span>
+                                        }
+                                        else if (item.IsNearExpiration)
+                                        {
+                                            <span class="inv-status-badge inv-status-warning">
+                                                Próximo a vencer
+                                            </span>
+                                        }
+                                        else if (!item.ExpirationDate.HasValue)
+                                        {
+                                            <span class="inv-status-badge inv-status-neutral">
+                                                Sin vencimiento
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inv-status-badge inv-status-active">
+                                                Sin alerta
+                                            </span>
+                                        }
+
+                                        <small>
+                                            @(item.ExpirationDate?.ToString("dd/MM/yyyy")
+                                                ?? "Sin fecha")
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- ACCIONES -->
+
+                                <td>
+
+                                    <div class="inv-l-actions">
+
+                                        <a asp-controller="@controllerName"
+                                           asp-action="Details"
+                                           asp-route-id="@item.Id"
+                                           class="inv-l-action">
+                                            Detalles
+                                        </a>
+
+                                        <a asp-controller="@controllerName"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.Id"
+                                           class="inv-l-action inv-l-edit">
+                                            Editar
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div id="inventoryNoResults"
+                 class="inv-l-no-results"
+                 hidden>
+
+                <strong>No se encontraron coincidencias</strong>
+
+                <p>
+                    Cambia la búsqueda o restablece los filtros.
+                </p>
+
+            </div>
+        }
+
+        <!-- PIE DE TABLA -->
+
+        <div class="inv-l-footer">
+
+            <span id="inventoryResultCount"
+                  role="status"
+                  aria-live="polite">
+                Mostrando @total de @total insumos
+            </span>
+
+            <span>
+                Control de inventario
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="inv-info inv-l-info">
+
+        <span class="inv-info-symbol">i</span>
+
+        <p>
+            <strong>Información de inventario:</strong>
+            las alertas se muestran según el stock mínimo y
+            las fechas registradas. El listado definitivo
+            utiliza los datos del backend.
+        </p>
+
+    </div>
+
+</section>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const search =
+                document.getElementById("inventorySearch");
+
+            const category =
+                document.getElementById("inventoryCategory");
+
+            const alertFilter =
+                document.getElementById("inventoryAlert");
+
+            const clear =
+                document.getElementById("clearInventoryFilters");
+
+            const rows = Array.from(
+                document.querySelectorAll(".inv-l-row")
+            );
+
+            const noResults =
+                document.getElementById("inventoryNoResults");
+
+            const resultCount =
+                document.getElementById("inventoryResultCount");
+
+            // Permitir búsquedas sin importar los acentos.
+            function normalize(value) {
+                return String(value)
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .toLowerCase()
+                    .trim();
+            }
+
+            function applyFilters() {
+
+                const query = normalize(search.value);
+                const selectedCategory = category.value;
+                const selectedAlert = alertFilter.value;
+
+                let visible = 0;
+
+                rows.forEach(row => {
+
+                    const name = normalize(row.dataset.name);
+                    const categoryName =
+                        normalize(row.dataset.categoryLabel);
+
+                    const isLow = row.dataset.low === "true";
+                    const isNear = row.dataset.near === "true";
+                    const isExpired = row.dataset.expired === "true";
+
+                    const matchesText =
+                        name.includes(query) ||
+                        categoryName.includes(query);
+
+                    const matchesCategory =
+                        !selectedCategory ||
+                        row.dataset.category === selectedCategory;
+
+                    let matchesAlert = true;
+
+                    switch (selectedAlert) {
+                        case "low":
+                            matchesAlert = isLow;
+                            break;
+
+                        case "near":
+                            matchesAlert = isNear && !isExpired;
+                            break;
+
+                        case "expired":
+                            matchesAlert = isExpired;
+                            break;
+
+                        case "normal":
+                            matchesAlert =
+                                !isLow && !isNear && !isExpired;
+                            break;
+                    }
+
+                    const show =
+                        matchesText &&
+                        matchesCategory &&
+                        matchesAlert;
+
+                    row.hidden = !show;
+
+                    if (show) {
+                        visible++;
+                    }
+                });
+
+                resultCount.textContent =
+                    `Mostrando ${visible} de ${rows.length} insumos`;
+
+                if (noResults) {
+                    noResults.hidden =
+                        visible > 0 || rows.length === 0;
+                }
+            }
+
+            search.addEventListener("input", applyFilters);
+            category.addEventListener("change", applyFilters);
+            alertFilter.addEventListener("change", applyFilters);
+
+            clear.addEventListener("click", function () {
+                search.value = "";
+                category.value = "";
+                alertFilter.value = "all";
+
+                applyFilters();
+                search.focus();
+            });
+
+            const dismiss =
+                document.getElementById("dismissNotice");
+
+            if (dismiss) {
+                dismiss.addEventListener("click", function () {
+                    document.getElementById("inventoryNotice")
+                        ?.remove();
+                });
+            }
+
+            applyFilters();
+        });
+    </script>
+}

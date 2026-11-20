@@ -1,0 +1,304 @@
+
+@model SmartRestaurant.Application.DTOs.Inventory.CreateInventoryItemDto
+@using SmartRestaurant.Domain.Enums
+
+@{
+    ViewData["Title"] = "Nuevo insumo";
+
+    var controllerName =
+        ViewData["InventoryController"]?.ToString()
+        ?? "Inventory";
+}
+
+<link rel="stylesheet"
+      href="~/css/inventory.css"
+      asp-append-version="true" />
+
+<section class="inv-page">
+
+    <div class="inv-breadcrumb">
+        SMARTRESTAURANT / INVENTARIO
+    </div>
+
+    <header class="inv-header">
+        <div>
+            <span class="inv-overline">
+                GESTIÓN DE INVENTARIO
+            </span>
+
+            <h1>Registrar nuevo insumo</h1>
+
+            <p>
+                Agrega un insumo al inventario y configura
+                sus existencias, costo y vencimiento.
+            </p>
+        </div>
+
+        <div class="inv-header-icon" aria-hidden="true">
+            <svg width="28" height="28"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="m12 3 9 5-9 5-9-5 9-5Z"/>
+                <path d="M3 8v9l9 5 9-5V8"/>
+                <path d="M12 13v9"/>
+            </svg>
+        </div>
+    </header>
+
+    <form asp-controller="@controllerName"
+          asp-action="Create"
+          method="post">
+
+        <div asp-validation-summary="All"
+             class="alert alert-danger inv-form-error"
+             role="alert">
+        </div>
+
+        <div class="inv-panel">
+
+            <div class="inv-panel-head">
+                <span class="inv-section-number">01</span>
+
+                <div>
+                    <h2>Información del insumo</h2>
+                    <p>
+                        Datos principales de identificación
+                        y clasificación.
+                    </p>
+                </div>
+            </div>
+
+            <div class="inv-panel-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-7">
+                        <label asp-for="Name"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="Name"
+                               class="form-control inv-input"
+                               maxlength="100"
+                               required
+                               placeholder="Ej. Pechuga de pollo" />
+
+                        <span asp-validation-for="Name"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label asp-for="Category"
+                               class="inv-label">
+                        </label>
+
+                        <select asp-for="Category"
+                                asp-items="Html.GetEnumSelectList<InventoryCategory>()"
+                                class="form-select inv-input"
+                                required>
+                            <option value="">
+                                Seleccionar categoría
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="Category"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Description"
+                               class="inv-label">
+                        </label>
+
+                        <textarea asp-for="Description"
+                                  class="form-control inv-input"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Descripción opcional del insumo">
+                        </textarea>
+
+                        <span asp-validation-for="Description"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="inv-panel">
+
+            <div class="inv-panel-head">
+                <span class="inv-section-number">02</span>
+
+                <div>
+                    <h2>Control de existencias</h2>
+                    <p>
+                        Define la cantidad inicial y el
+                        nivel mínimo de inventario.
+                    </p>
+                </div>
+            </div>
+
+            <div class="inv-panel-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <label asp-for="Unit"
+                               class="inv-label">
+                        </label>
+
+                        <select asp-for="Unit"
+                                asp-items="Html.GetEnumSelectList<UnitOfMeasure>()"
+                                class="form-select inv-input"
+                                required>
+                            <option value="">
+                                Seleccionar unidad
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="Unit"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="CurrentStock"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="CurrentStock"
+                               type="number"
+                               min="0"
+                               step="any"
+                               class="form-control inv-input"
+                               required />
+
+                        <span asp-validation-for="CurrentStock"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="MinimumStock"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="MinimumStock"
+                               type="number"
+                               min="0"
+                               step="any"
+                               class="form-control inv-input"
+                               required />
+
+                        <span asp-validation-for="MinimumStock"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="inv-info mt-4">
+                    <span class="inv-info-symbol">i</span>
+
+                    <p>
+                        El stock mínimo sirve como referencia
+                        para identificar los insumos con
+                        existencias bajas.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="inv-panel">
+
+            <div class="inv-panel-head">
+                <span class="inv-section-number">03</span>
+
+                <div>
+                    <h2>Costo y vencimiento</h2>
+                    <p>
+                        Información económica y fecha de
+                        vencimiento, cuando corresponda.
+                    </p>
+                </div>
+            </div>
+
+            <div class="inv-panel-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <label asp-for="UnitCost"
+                               class="inv-label">
+                        </label>
+
+                        <div class="inv-money-field">
+                            <span>RD$</span>
+
+                            <input asp-for="UnitCost"
+                                   type="number"
+                                   min="0"
+                                   step="0.01"
+                                   class="form-control inv-input"
+                                   required />
+                        </div>
+
+                        <span asp-validation-for="UnitCost"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ExpirationDate"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="ExpirationDate"
+                               type="date"
+                               class="form-control inv-input" />
+
+                        <span asp-validation-for="ExpirationDate"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="inv-help">
+                            Déjalo vacío si el insumo no tiene
+                            fecha de vencimiento.
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="inv-form-footer">
+
+            <p>
+                Los campos se verificarán al guardar.
+            </p>
+
+            <button type="submit"
+                    class="inv-primary-button">
+
+                Registrar insumo
+                <span aria-hidden="true">+</span>
+
+            </button>
+
+        </div>
+
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
