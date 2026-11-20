@@ -9,23 +9,28 @@ namespace SmartRestaurant.Web.Controllers;
 public class TablesController : Controller
 {
     private readonly ITableService _tableService;
+    private readonly ITableAvailabilityService _tableAvailabilityService;
 
-    public TablesController(ITableService tableService)
+    public TablesController(
+        ITableService tableService,
+        ITableAvailabilityService tableAvailabilityService)
     {
         _tableService = tableService;
+        _tableAvailabilityService = tableAvailabilityService;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var tables = await _tableService.GetAllAsync(ct);
+        var tables = await _tableAvailabilityService.GetOperationalStatusesAsync(ct: ct);
         var model = tables
             .Select(table => new TableListItemViewModel
             {
                 Id = table.Id,
                 Number = table.Number,
                 Capacity = table.Capacity,
-                IsActive = table.IsActive
+                IsActive = table.IsActive,
+                OperationalState = table.State
             })
             .ToArray();
 
@@ -132,15 +137,22 @@ public class TablesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
     {
-        var isActive = await _tableService.ToggleActiveAsync(id, ct);
-        if (isActive is null)
+        try
         {
-            return NotFound();
-        }
+            var isActive = await _tableService.ToggleActiveAsync(id, ct);
+            if (isActive is null)
+            {
+                return NotFound();
+            }
 
-        TempData["Success"] = isActive.Value
-            ? "Mesa activada correctamente."
-            : "Mesa desactivada correctamente.";
+            TempData["Success"] = isActive.Value
+                ? "Mesa activada correctamente."
+                : "Mesa desactivada correctamente.";
+        }
+        catch (ValidationException exception)
+        {
+            TempData["Error"] = string.Join(" ", exception.Errors.Select(error => error.ErrorMessage));
+        }
 
         return RedirectToAction(nameof(Index));
     }
