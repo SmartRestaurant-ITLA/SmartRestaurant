@@ -1,0 +1,21 @@
+﻿<ul class="navbar-nav">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <!-- Con sesión iniciada: nombre del usuario y botón para salir -->
+        <li class="nav-item d-flex align-items-center">
+            <span class="navbar-text text-dark me-2">Hola, <strong>@User.Identity.Name</strong></span>
+        </li>
+        <li class="nav-item">
+            <form asp-controller="Login" asp-action="Logout" method="post" class="d-inline">
+                <button type="submit" class="nav-link btn btn-link text-dark">Cerrar sesión</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <!-- Sin sesión: enlace para entrar -->
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Index">Iniciar sesión</a>
+        </li>
+    }
+</ul>
