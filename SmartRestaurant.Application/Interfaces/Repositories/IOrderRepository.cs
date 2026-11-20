@@ -13,6 +13,8 @@ public interface IOrderRepository
     El parámetro opcional excludeOrderId permite ignorar un pedido concreto, por si más adelante se necesita validar sobre un pedido existente.*/
     Task<bool> HasOpenOrderForTableAsync(int tableId, int? excludeOrderId = null, CancellationToken ct = default);
 
+    Task<IReadOnlyCollection<int>> GetOpenOrderTableIdsAsync(CancellationToken ct = default);
+
     Task AddAsync(Order order, CancellationToken ct = default);
 
     Task UpdateAsync(Order order, CancellationToken ct = default);

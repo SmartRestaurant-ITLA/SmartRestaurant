@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using SmartRestaurant.Application.DTOs.Orders;
 using SmartRestaurant.Application.Interfaces;
 using SmartRestaurant.Application.Interfaces.Repositories;
+using SmartRestaurant.Application.Interfaces.Services;
 using SmartRestaurant.Domain.Entities;
 using SmartRestaurant.Domain.Enums;
 
@@ -13,6 +14,7 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IProductRepository _productRepository;
     private readonly IReservationRepository _reservationRepository;
+    private readonly ITableAvailabilityService _tableAvailabilityService;
     private readonly IValidator<CreateOrderDto> _createValidator;
     private readonly IValidator<OrderStatus> _statusValidator;
 
@@ -30,6 +32,7 @@ public class OrderService : IOrderService
      IOrderRepository orderRepository,
      IProductRepository productRepository,
      IReservationRepository reservationRepository,
+     ITableAvailabilityService tableAvailabilityService,
      IValidator<CreateOrderDto> createValidator,
      IValidator<OrderStatus> statusValidator,
      IValidator<AddOrderItemDto> addItemValidator,
@@ -38,6 +41,7 @@ public class OrderService : IOrderService
         _orderRepository = orderRepository;
         _productRepository = productRepository;
         _reservationRepository = reservationRepository;
+        _tableAvailabilityService = tableAvailabilityService;
         _createValidator = createValidator;
         _statusValidator = statusValidator;
         _addItemValidator = addItemValidator;
@@ -70,26 +74,6 @@ public class OrderService : IOrderService
     public async Task<int> CreateAsync(CreateOrderDto dto, CancellationToken ct = default)
     {
         await _createValidator.ValidateAndThrowAsync(dto, ct);
-
-        var table = _reservationRepository.GetTables().FirstOrDefault(candidate => candidate.Id == dto.TableId);
-        if (table is null || !table.IsActive)
-        {
-            throw new ValidationException(
-            [
-                new ValidationFailure(nameof(CreateOrderDto.TableId), "Selecciona una mesa existente y activa.")
-            ]);
-        }
-
-        // Una mesa solo puede tener un pedido abierto (Pending o InPreparation)
-        if (await _orderRepository.HasOpenOrderForTableAsync(dto.TableId, null, ct))
-        {
-            throw new ValidationException(
-            [
-                new ValidationFailure(
-                nameof(CreateOrderDto.TableId),
-                "La mesa ya tiene un pedido abierto.")
-            ]);
-        }
 
         // Una sola línea por producto: si se repite, se suman las cantidades
         var requestedDetails = dto.Details
@@ -132,6 +116,16 @@ public class OrderService : IOrderService
             CreatedAt = now,
             UpdatedAt = now
         };
+
+        if (!await _tableAvailabilityService.CanReceiveOrderAsync(dto.TableId, DateTime.Now, ct))
+        {
+            throw new ValidationException(
+            [
+                new ValidationFailure(
+                    nameof(CreateOrderDto.TableId),
+                    "La mesa no está disponible para recibir un pedido: puede estar inactiva, reservada o tener otro pedido abierto.")
+            ]);
+        }
 
         await _orderRepository.AddAsync(order, ct);
         return order.Id;

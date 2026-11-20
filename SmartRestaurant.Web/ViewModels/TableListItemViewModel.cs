@@ -1,4 +1,6 @@
 
+using SmartRestaurant.Application.DTOs.Tables;
+
 namespace SmartRestaurant.Web.ViewModels
 {
     public class TableListItemViewModel
@@ -10,5 +12,7 @@ namespace SmartRestaurant.Web.ViewModels
         public int Capacity { get; set; }
 
         public bool IsActive { get; set; }
+
+        public TableOperationalState OperationalState { get; set; }
     }
 }

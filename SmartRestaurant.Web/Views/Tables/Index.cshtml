@@ -1,5 +1,6 @@
 
 @model IReadOnlyList<SmartRestaurant.Web.ViewModels.TableListItemViewModel>
+@using SmartRestaurant.Application.DTOs.Tables
 @using System.Linq
 
 @{
@@ -20,6 +21,7 @@
         .Sum(m => m.Capacity);
 
     var success = TempData["Success"] as string;
+    var error = TempData["Error"] as string;
 }
 
 <link rel="stylesheet"
@@ -92,6 +94,11 @@
             </button>
 
         </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger" role="alert">@error</div>
     }
 
     <!-- TARJETAS DE ESTADÍSTICAS -->
@@ -394,8 +401,8 @@
         <p>
             <strong>Estado y disponibilidad:</strong>
             una mesa activa no significa necesariamente
-            que esté libre. La disponibilidad real se
-            mostrará cuando esté integrado el backend.
+            que esté libre. El estado operativo considera
+            reservas vigentes y pedidos abiertos.
         </p>
     </div>
 
@@ -485,12 +492,12 @@
 
         <div class="tm-ui-detail-row">
             <span>Disponibilidad operativa</span>
-            <strong>Sin consultar</strong>
+            <strong id="detailsOperationalState">—</strong>
         </div>
 
         <p class="tm-ui-details-note">
-            La disponibilidad dependerá de reservas y pedidos
-            cuando esté integrado el backend.
+            El estado operativo se calcula según las reservas vigentes
+            y los pedidos abiertos.
         </p>
 
         <button type="button"
@@ -604,6 +611,7 @@
                         const number = button.dataset.number;
                         const capacity = Number(button.dataset.capacity);
                         const active = button.dataset.active === "true";
+                        const operational = button.dataset.operational;
 
                         document.getElementById("detailsNumber")
                             .textContent =
@@ -616,6 +624,9 @@
 
                         document.getElementById("detailsStatus")
                             .textContent = active ? "Activa" : "Inactiva";
+
+                        document.getElementById("detailsOperationalState")
+                            .textContent = operational;
 
                         detailsDialog.showModal();
                     });

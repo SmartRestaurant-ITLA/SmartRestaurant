@@ -45,6 +45,14 @@ public class OrderRepository : IOrderRepository
             && (excludeOrderId == null || order.Id != excludeOrderId),
         ct);
 
+    public async Task<IReadOnlyCollection<int>> GetOpenOrderTableIdsAsync(CancellationToken ct = default) =>
+        await _orders
+            .AsNoTracking()
+            .Where(order => order.Status == OrderStatus.Pending || order.Status == OrderStatus.InPreparation)
+            .Select(order => order.TableId)
+            .Distinct()
+            .ToArrayAsync(ct);
+
     public async Task AddAsync(Order order, CancellationToken ct = default)
     {
         _orders.Add(order);

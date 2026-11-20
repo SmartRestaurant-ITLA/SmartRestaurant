@@ -10,15 +10,18 @@ namespace SmartRestaurant.Application.Services;
 public class TableService : ITableService
 {
     private readonly ITableRepository _repository;
+    private readonly ITableAvailabilityService _tableAvailabilityService;
     private readonly IValidator<CreateTableDto> _createValidator;
     private readonly IValidator<UpdateTableDto> _updateValidator;
 
     public TableService(
         ITableRepository repository,
+        ITableAvailabilityService tableAvailabilityService,
         IValidator<CreateTableDto> createValidator,
         IValidator<UpdateTableDto> updateValidator)
     {
         _repository = repository;
+        _tableAvailabilityService = tableAvailabilityService;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
     }
@@ -62,6 +65,11 @@ public class TableService : ITableService
             return false;
         }
 
+        if (table.IsActive && !dto.IsActive)
+        {
+            await EnsureCanDeactivateAsync(table.Id, ct);
+        }
+
         table.ChangeCapacity(dto.Capacity);
         SetActiveState(table, dto.IsActive);
         await _repository.UpdateAsync(table, ct);
@@ -78,6 +86,7 @@ public class TableService : ITableService
 
         if (table.IsActive)
         {
+            await EnsureCanDeactivateAsync(table.Id, ct);
             table.Deactivate();
         }
         else
@@ -87,6 +96,19 @@ public class TableService : ITableService
 
         await _repository.UpdateAsync(table, ct);
         return table.IsActive;
+    }
+
+    private async Task EnsureCanDeactivateAsync(int tableId, CancellationToken ct)
+    {
+        if (!await _tableAvailabilityService.CanDeactivateTableAsync(tableId, ct))
+        {
+            throw new ValidationException(
+            [
+                new ValidationFailure(
+                    nameof(UpdateTableDto.IsActive),
+                    "No se puede desactivar la mesa mientras tenga un pedido Pending o InPreparation abierto.")
+            ]);
+        }
     }
 
     private static void SetActiveState(Table table, bool isActive)
