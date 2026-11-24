@@ -34,29 +34,30 @@ namespace SmartRestaurant.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create(CancellationToken ct)
         {
             var model = new CreateReservationViewModel
             {
                 StartAt = DateTime.Now.AddHours(1)
             };
 
-            ReloadAvailableTables(model, null, false);
+            await ReloadAvailableTables(model, null, false, ct);
 
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(
+        public async Task<IActionResult> Create(
             CreateReservationViewModel model,
-            string command)
+            string command,
+            CancellationToken ct)
         {
             if (string.Equals(
                 command, "suggest",
                 StringComparison.OrdinalIgnoreCase))
             {
-                ReloadAvailableTables(model, null, true);
+                await ReloadAvailableTables(model, null, true, ct);
                 return View(model);
             }
 
@@ -69,7 +70,7 @@ namespace SmartRestaurant.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                ReloadAvailableTables(model, null, true);
+                await ReloadAvailableTables(model, null, true, ct);
                 return View(model);
             }
 
@@ -79,21 +80,22 @@ namespace SmartRestaurant.Web.Controllers
                     nameof(model.TableId),
                     "Selecciona una mesa disponible.");
 
-                ReloadAvailableTables(model, null, true);
+                await ReloadAvailableTables(model, null, true, ct);
                 return View(model);
             }
 
             try
             {
-                var reservation = _reservationService.SaveReservation(
+                var reservation = await _reservationService.SaveReservation(
                     model.CustomerName,
                     model.StartAt,
                     model.DurationMinutes,
                     model.PartySize,
-                    model.TableId.Value);
+                    model.TableId.Value,
+                    ct: ct);
 
-                reservation = _reservationService
-                    .ConfirmReservation(reservation.Id);
+                reservation = await _reservationService
+                    .ConfirmReservation(reservation.Id, ct);
 
                 TempData["Success"] =
                     "La reserva se confirmó correctamente.";
@@ -108,7 +110,7 @@ namespace SmartRestaurant.Web.Controllers
                 ModelState.AddModelError(
                     string.Empty, exception.Message);
 
-                ReloadAvailableTables(model, null, true);
+                await ReloadAvailableTables(model, null, true, ct);
                 return View(model);
             }
         }
@@ -130,7 +132,7 @@ namespace SmartRestaurant.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id, CancellationToken ct)
         {
             var reservation = _reservationService.GetReservation(id);
 
@@ -149,16 +151,17 @@ namespace SmartRestaurant.Web.Controllers
                 TableId = reservation.TableId
             };
 
-            ReloadAvailableTables(model, reservation.Id, false);
+            await ReloadAvailableTables(model, reservation.Id, false, ct);
 
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(
+        public async Task<IActionResult> Edit(
             EditReservationViewModel model,
-            string command)
+            string command,
+            CancellationToken ct)
         {
             var reservation =
                 _reservationService.GetReservation(model.Id);
@@ -172,7 +175,7 @@ namespace SmartRestaurant.Web.Controllers
                 command, "suggest",
                 StringComparison.OrdinalIgnoreCase))
             {
-                ReloadAvailableTables(model, model.Id, true);
+                await ReloadAvailableTables(model, model.Id, true, ct);
                 return View(model);
             }
 
@@ -185,7 +188,7 @@ namespace SmartRestaurant.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                ReloadAvailableTables(model, model.Id, true);
+                await ReloadAvailableTables(model, model.Id, true, ct);
                 return View(model);
             }
 
@@ -195,20 +198,21 @@ namespace SmartRestaurant.Web.Controllers
                     nameof(model.TableId),
                     "Selecciona una mesa disponible.");
 
-                ReloadAvailableTables(model, model.Id, true);
+                await ReloadAvailableTables(model, model.Id, true, ct);
                 return View(model);
             }
 
             try
             {
                 var updatedReservation =
-                    _reservationService.SaveReservation(
+                    await _reservationService.SaveReservation(
                         model.CustomerName,
                         model.StartAt,
                         model.DurationMinutes,
                         model.PartySize,
                         model.TableId.Value,
-                        model.Id);
+                        model.Id,
+                        ct);
 
                 TempData["Success"] =
                     "Los cambios de la reserva se guardaron correctamente.";
@@ -223,15 +227,16 @@ namespace SmartRestaurant.Web.Controllers
                 ModelState.AddModelError(
                     string.Empty, exception.Message);
 
-                ReloadAvailableTables(model, model.Id, true);
+                await ReloadAvailableTables(model, model.Id, true, ct);
                 return View(model);
             }
         }
 
-        private void ReloadAvailableTables(
+        private async Task ReloadAvailableTables(
             CreateReservationViewModel model,
             int? excludedReservationId,
-            bool suggestTable)
+            bool suggestTable,
+            CancellationToken ct)
         {
             model.AvailableTables = [];
 
@@ -246,11 +251,12 @@ namespace SmartRestaurant.Web.Controllers
             try
             {
                 var availableTables =
-                    _reservationService.GetAvailableTables(
+                    await _reservationService.GetAvailableTables(
                         model.StartAt,
                         model.DurationMinutes,
                         model.PartySize,
-                        excludedReservationId);
+                        excludedReservationId,
+                        ct);
 
                 model.AvailableTables = availableTables
                     .Select(table => new SelectListItem(
@@ -282,10 +288,11 @@ namespace SmartRestaurant.Web.Controllers
             }
         }
 
-        private void ReloadAvailableTables(
+        private async Task ReloadAvailableTables(
             EditReservationViewModel model,
             int? excludedReservationId,
-            bool suggestTable)
+            bool suggestTable,
+            CancellationToken ct)
         {
             model.AvailableTables = [];
 
@@ -300,11 +307,12 @@ namespace SmartRestaurant.Web.Controllers
             try
             {
                 var availableTables =
-                    _reservationService.GetAvailableTables(
+                    await _reservationService.GetAvailableTables(
                         model.StartAt,
                         model.DurationMinutes,
                         model.PartySize,
-                        excludedReservationId);
+                        excludedReservationId,
+                        ct);
 
                 model.AvailableTables = availableTables
                     .Select(table => new SelectListItem(

@@ -1,4 +1,6 @@
 using SmartRestaurant.Application.Interfaces.Repositories;
+using SmartRestaurant.Application.Interfaces.Services;
+using SmartRestaurant.Application.Interfaces.Repositories;
 using SmartRestaurant.Domain.Entities;
 using SmartRestaurant.Domain.Enums;
 
@@ -7,10 +9,14 @@ namespace SmartRestaurant.Application.Services
     public class ReservationService
     {
         private readonly IReservationRepository _repository;
+        private readonly ITableAvailabilityService _tableAvailabilityService;
 
-        public ReservationService(IReservationRepository repository)
+        public ReservationService(
+            IReservationRepository repository,
+            ITableAvailabilityService tableAvailabilityService)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _tableAvailabilityService = tableAvailabilityService ?? throw new ArgumentNullException(nameof(tableAvailabilityService));
         }
 
         public IReadOnlyCollection<Table> GetTables()
@@ -28,96 +34,84 @@ namespace SmartRestaurant.Application.Services
             return _repository.GetReservation(id);
         }
 
-        public IReadOnlyCollection<Table> GetAvailableTables(
+        public Task<IReadOnlyList<Table>> GetAvailableTables(
             DateTime startAt,
             int durationMinutes,
             int partySize,
-            int? excludedReservationId = null)
-        {
-            ValidateReservationDetails(durationMinutes, partySize);
-            var endAt = startAt.AddMinutes(durationMinutes);
-            var reservations = _repository.GetReservations();
+            int? excludedReservationId = null,
+            CancellationToken ct = default) =>
+            _tableAvailabilityService.GetAvailableTablesForReservationAsync(
+                startAt,
+                durationMinutes,
+                partySize,
+                excludedReservationId,
+                ct);
 
-            return _repository.GetTables()
-                .Where(table => table.IsActive && table.Capacity >= partySize)
-                .Where(table => !reservations.Any(reservation =>
-                    reservation.Id != excludedReservationId &&
-                    reservation.TableId == table.Id &&
-                    reservation.Status != ReservationStatus.Cancelled &&
-                    Overlaps(startAt, endAt, reservation)))
-                .ToArray();
-        }
-
-        public Reservation SaveReservation(
+        public async Task<Reservation> SaveReservation(
             string customerName,
             DateTime startAt,
             int durationMinutes,
             int partySize,
             int tableId,
-            int? reservationId = null)
+            int? reservationId = null,
+            CancellationToken ct = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(customerName);
             ValidateReservationDetails(durationMinutes, partySize);
 
             var existing = reservationId.HasValue
-                ? _repository.GetReservation(reservationId.Value)
+                ? await _repository.GetReservationAsync(reservationId.Value, ct)
                     ?? throw new KeyNotFoundException($"No existe la reserva {reservationId.Value}.")
                 : null;
 
-            ValidateTableAvailability(tableId, startAt, durationMinutes, partySize, existing?.Id);
+            await ValidateTableAvailability(tableId, startAt, durationMinutes, partySize, existing?.Id, ct);
 
             if (existing is null)
             {
-                return _repository.SaveReservation(new Reservation(
+                return await _repository.SaveReservationAsync(new Reservation(
                     customerName,
                     startAt,
                     durationMinutes,
                     partySize,
-                    tableId));
+                    tableId), ct);
             }
 
             existing.UpdateDetails(customerName, startAt, durationMinutes, partySize, tableId);
-            return _repository.SaveReservation(existing);
+            return await _repository.SaveReservationAsync(existing, ct);
         }
 
-        public Reservation ConfirmReservation(int reservationId)
+        public async Task<Reservation> ConfirmReservation(int reservationId, CancellationToken ct = default)
         {
-            var reservation = _repository.GetReservation(reservationId)
+            var reservation = await _repository.GetReservationAsync(reservationId, ct)
                 ?? throw new KeyNotFoundException($"No existe la reserva {reservationId}.");
 
-            ValidateTableAvailability(
+            await ValidateTableAvailability(
                 reservation.TableId,
                 reservation.StartAt,
                 reservation.DurationMinutes,
                 reservation.PartySize,
-                reservation.Id);
+                reservation.Id,
+                ct);
 
             reservation.ChangeStatus(ReservationStatus.Confirmed);
-            return _repository.SaveReservation(reservation);
+            return await _repository.SaveReservationAsync(reservation, ct);
         }
 
-        private void ValidateTableAvailability(
+        private async Task ValidateTableAvailability(
             int tableId,
             DateTime startAt,
             int durationMinutes,
             int partySize,
-            int? excludedReservationId)
+            int? excludedReservationId,
+            CancellationToken ct)
         {
-            var table = _repository.GetTables().FirstOrDefault(candidate => candidate.Id == tableId)
-                ?? throw new KeyNotFoundException($"No existe la mesa {tableId}.");
-
-            if (!table.IsActive)
-            {
-                throw new InvalidOperationException("La mesa no está activa.");
-            }
-
-            if (table.Capacity < partySize)
-            {
-                throw new InvalidOperationException("La capacidad de la mesa es insuficiente.");
-            }
-
-            if (!GetAvailableTables(startAt, durationMinutes, partySize, excludedReservationId)
-                .Any(availableTable => availableTable.Id == tableId))
+            if (!await _tableAvailabilityService.CanAssignReservationAsync(
+                    tableId,
+                    startAt,
+                    durationMinutes,
+                    partySize,
+                    excludedReservationId,
+                    ct))
             {
                 throw new InvalidOperationException("La mesa no está disponible en el horario solicitado.");
             }
