@@ -1,0 +1,478 @@
+
+@model SmartRestaurant.Application.DTOs.Inventory.UpdateInventoryItemDto
+@using SmartRestaurant.Domain.Enums
+
+@{
+    ViewData["Title"] = "Editar insumo";
+
+    var controllerName =
+        ViewData["InventoryController"]?.ToString()
+        ?? "Inventory";
+}
+
+<link rel="stylesheet"
+      href="~/css/inventory.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-pages.css"
+      asp-append-version="true" />
+
+<section class="inv-page inv-edit-page">
+
+    <!-- ENCABEZADO -->
+
+    <div class="inv-breadcrumb">
+        SMARTRESTAURANT / INVENTARIO
+    </div>
+
+    <header class="inv-header">
+
+        <div>
+            <span class="inv-overline">
+                ACTUALIZACIÓN DE INVENTARIO
+            </span>
+
+            <h1>Editar insumo</h1>
+
+            <p>
+                Actualiza la información del insumo
+                registrado con ID #@Model.Id.
+            </p>
+        </div>
+
+        <a asp-controller="@controllerName"
+           asp-action="Details"
+           asp-route-id="@Model.Id"
+           class="inv-secondary-button">
+            ← Volver al detalle
+        </a>
+
+    </header>
+
+    <!-- FORMULARIO -->
+
+    <form asp-controller="@controllerName"
+          asp-action="Edit"
+          asp-route-id="@Model.Id"
+          method="post"
+          id="inventoryEditForm">
+
+        <input asp-for="Id" type="hidden" />
+
+        <div asp-validation-summary="All"
+             class="alert alert-danger inv-form-error"
+             role="alert">
+        </div>
+
+        <!-- INFORMACIÓN GENERAL -->
+
+        <div class="inv-panel">
+
+            <div class="inv-panel-head">
+
+                <span class="inv-section-number">01</span>
+
+                <div>
+                    <h2>Información del insumo</h2>
+                    <p>
+                        Modifica los datos principales
+                        de identificación.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="inv-panel-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-7">
+
+                        <label asp-for="Name"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="Name"
+                               class="form-control inv-input"
+                               maxlength="100"
+                               required />
+
+                        <span asp-validation-for="Name"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                    <div class="col-md-5">
+
+                        <label asp-for="Category"
+                               class="inv-label">
+                        </label>
+
+                        <select asp-for="Category"
+                                asp-items="Html.GetEnumSelectList<InventoryCategory>()"
+                                class="form-select inv-input"
+                                required>
+                            <option value="">
+                                Seleccionar categoría
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="Category"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <label asp-for="Description"
+                               class="inv-label">
+                        </label>
+
+                        <textarea asp-for="Description"
+                                  class="form-control inv-input"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Descripción del insumo"></textarea>
+
+                        <span asp-validation-for="Description"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- EXISTENCIAS -->
+
+        <div class="inv-panel">
+
+            <div class="inv-panel-head">
+
+                <span class="inv-section-number">02</span>
+
+                <div>
+                    <h2>Control de existencias</h2>
+
+                    <p>
+                        Actualiza la cantidad y el nivel
+                        mínimo de stock.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="inv-panel-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+
+                        <label asp-for="Unit"
+                               class="inv-label">
+                        </label>
+
+                        <select asp-for="Unit"
+                                asp-items="Html.GetEnumSelectList<UnitOfMeasure>()"
+                                class="form-select inv-input"
+                                required>
+                            <option value="">
+                                Seleccionar unidad
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="Unit"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label asp-for="CurrentStock"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="CurrentStock"
+                               type="number"
+                               min="0"
+                               step="any"
+                               required
+                               class="form-control inv-input" />
+
+                        <span asp-validation-for="CurrentStock"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label asp-for="MinimumStock"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="MinimumStock"
+                               type="number"
+                               min="0"
+                               step="any"
+                               required
+                               class="form-control inv-input" />
+
+                        <span asp-validation-for="MinimumStock"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- INDICADOR DINÁMICO -->
+
+                <div class="inv-edit-stock-summary"
+                     aria-live="polite">
+
+                    <div>
+                        <strong>
+                            Indicador de existencias
+                        </strong>
+
+                        <p id="editStockMessage">
+                            Evaluando nivel de existencias...
+                        </p>
+                    </div>
+
+                    <span id="editStockBadge"
+                          class="inv-status-badge inv-status-neutral">
+                        Sin evaluar
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- COSTO Y VENCIMIENTO -->
+
+        <div class="inv-panel">
+
+            <div class="inv-panel-head">
+
+                <span class="inv-section-number">03</span>
+
+                <div>
+                    <h2>Costo y vencimiento</h2>
+
+                    <p>
+                        Actualiza el costo por unidad
+                        y la fecha de vencimiento.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="inv-panel-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+
+                        <label asp-for="UnitCost"
+                               class="inv-label">
+                        </label>
+
+                        <div class="inv-money-field">
+
+                            <span>RD$</span>
+
+                            <input asp-for="UnitCost"
+                                   type="number"
+                                   min="0"
+                                   step="0.01"
+                                   required
+                                   class="form-control inv-input" />
+
+                        </div>
+
+                        <span asp-validation-for="UnitCost"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label asp-for="ExpirationDate"
+                               class="inv-label">
+                        </label>
+
+                        <input asp-for="ExpirationDate"
+                               asp-format="{0:yyyy-MM-dd}"
+                               type="date"
+                               class="form-control inv-input" />
+
+                        <span asp-validation-for="ExpirationDate"
+                              class="text-danger small">
+                        </span>
+
+                        <small class="inv-help">
+                            Opcional. Puede quedar vacío.
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="inv-info mt-4">
+
+                    <span class="inv-info-symbol">i</span>
+
+                    <p>
+                        Al guardar los cambios se aplicarán
+                        las validaciones del backend.
+                        Las fechas anteriores pueden representar
+                        insumos que ya han vencido.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- BOTONES -->
+
+        <div class="inv-edit-footer">
+
+            <div class="inv-edit-footer-info">
+
+                <strong>
+                    Editando insumo #@Model.Id
+                </strong>
+
+                <span>
+                    Comprueba los datos antes de guardar.
+                </span>
+
+            </div>
+
+            <div class="inv-edit-actions">
+
+                <a asp-controller="@controllerName"
+                   asp-action="Details"
+                   asp-route-id="@Model.Id"
+                   class="inv-secondary-button">
+                    Cancelar
+                </a>
+
+                <button type="submit"
+                        class="inv-primary-button">
+                    Guardar cambios
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</section>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const currentStock =
+                document.getElementById("CurrentStock");
+
+            const minimumStock =
+                document.getElementById("MinimumStock");
+
+            const badge =
+                document.getElementById("editStockBadge");
+
+            const message =
+                document.getElementById("editStockMessage");
+
+            function updateStockIndicator() {
+
+                const current =
+                    Number(currentStock.value);
+
+                const minimum =
+                    Number(minimumStock.value);
+
+                const valid =
+                    currentStock.value.trim() !== "" &&
+                    minimumStock.value.trim() !== "" &&
+                    Number.isFinite(current) &&
+                    Number.isFinite(minimum) &&
+                    current >= 0 &&
+                    minimum >= 0;
+
+                badge.classList.remove(
+                    "inv-status-active",
+                    "inv-status-warning",
+                    "inv-status-neutral"
+                );
+
+                if (!valid) {
+                    badge.textContent = "Sin evaluar";
+
+                    badge.classList.add(
+                        "inv-status-neutral"
+                    );
+
+                    message.textContent =
+                        "Introduce cantidades válidas para evaluar el stock.";
+
+                    return;
+                }
+
+                if (current <= minimum) {
+                    badge.textContent = "Stock bajo";
+
+                    badge.classList.add(
+                        "inv-status-warning"
+                    );
+
+                    message.textContent =
+                        "Las existencias están en el mínimo o por debajo.";
+                }
+                else {
+                    badge.textContent = "Stock adecuado";
+
+                    badge.classList.add(
+                        "inv-status-active"
+                    );
+
+                    message.textContent =
+                        "Las existencias superan el nivel mínimo configurado.";
+                }
+            }
+
+            currentStock.addEventListener(
+                "input",
+                updateStockIndicator
+            );
+
+            minimumStock.addEventListener(
+                "input",
+                updateStockIndicator
+            );
+
+            updateStockIndicator();
+
+        });
+    </script>
+}

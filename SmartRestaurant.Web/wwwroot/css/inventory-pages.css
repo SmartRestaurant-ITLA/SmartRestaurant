@@ -1,0 +1,420 @@
+
+/* SMARTRESTAURANT - PÁGINAS DE INVENTARIO */
+
+/* BOTONES SECUNDARIOS */
+
+.inv-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 17px;
+    color: #546b89;
+    background: #fff;
+    border: 1px solid #dce5f1;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.inv-secondary-button:hover {
+    color: #2563eb;
+    background: #f5f8ff;
+    border-color: #bcd2fa;
+}
+
+/* AVISOS */
+
+.inv-notice {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    background: #f0faf4;
+    border: 1px solid #cdebd8;
+    border-radius: 11px;
+    padding: 15px 18px;
+    margin-bottom: 22px;
+    animation: inv-enter .3s ease;
+}
+
+.inv-notice-check {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #d9f3e4;
+    color: #17834a;
+    font-size: 20px;
+    font-weight: 750;
+    flex-shrink: 0;
+}
+
+.inv-notice strong {
+    color: #17683e;
+    font-size: 13px;
+}
+
+.inv-notice p {
+    color: #4e8265;
+    font-size: 12px;
+    margin: 4px 0 0;
+}
+
+/* ENCABEZADO DE INSUMO */
+
+.inv-detail-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: #fff;
+    border: 1px solid #e2e9f2;
+    border-radius: 13px;
+    padding: 23px;
+    margin-bottom: 22px;
+}
+
+.inv-detail-hero-icon {
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    background: #eaf2ff;
+    color: #2563eb;
+    border-radius: 15px;
+    flex-shrink: 0;
+}
+
+.inv-detail-hero-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.inv-detail-hero-content > span {
+    color: #8a9bb0;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1px;
+}
+
+.inv-detail-hero-content h2 {
+    color: #172b4d;
+    font-size: 22px;
+    font-weight: 750;
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+}
+
+.inv-detail-hero-content p {
+    color: #7b8ba1;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* TARJETAS DE INDICADORES */
+
+.inv-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 23px;
+}
+
+.inv-metric {
+    min-width: 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e2e9f2;
+    border-radius: 12px;
+    box-shadow: 0 5px 16px rgba(20,45,80,.035);
+}
+
+.inv-metric > span {
+    display: block;
+    color: #7185a0;
+    font-size: 12px;
+    margin-bottom: 16px;
+}
+
+.inv-metric > strong {
+    display: block;
+    color: #172b4d;
+    font-size: 22px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
+.inv-metric small {
+    display: block;
+    margin-top: 7px;
+    color: #8c9aaf;
+    font-size: 11px;
+}
+
+/* DETALLES */
+
+.inv-detail-panel {
+    height: 100%;
+    margin-bottom: 0;
+}
+
+.inv-data-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.inv-data-row:first-child {
+    padding-top: 0;
+}
+
+.inv-data-row span {
+    color: #8190a6;
+    font-size: 12px;
+}
+
+.inv-data-row strong {
+    color: #273d5b;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.inv-description {
+    margin-top: 23px;
+}
+
+.inv-description span {
+    display: block;
+    color: #72849d;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 9px;
+}
+
+.inv-description p {
+    color: #526985;
+    font-size: 13px;
+    line-height: 1.75;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ESTADOS */
+
+.inv-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 11px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.inv-status-active {
+    color: #197349;
+    background: #e1f5e9;
+}
+
+.inv-status-inactive,
+.inv-status-neutral {
+    color: #68778d;
+    background: #edf1f5;
+}
+
+.inv-status-warning {
+    color: #a86819;
+    background: #fff1d9;
+}
+
+.inv-status-danger {
+    color: #b83c48;
+    background: #fde9eb;
+}
+
+.inv-alert-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.inv-alert-title {
+    color: #344961;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.inv-alert-item p {
+    color: #8190a6;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.inv-detail-divider {
+    height: 1px;
+    background: #e9eef5;
+    margin: 23px 0;
+}
+
+/* PIE Y ACCIONES */
+
+.inv-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .inv-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 580px) {
+    .inv-detail-hero {
+        flex-wrap: wrap;
+    }
+
+    .inv-detail-hero > .inv-status-badge {
+        margin-left: auto;
+    }
+
+    .inv-metric {
+        padding: 16px;
+    }
+
+    .inv-metric > strong {
+        font-size: 18px;
+    }
+
+    .inv-detail-actions {
+        flex-direction: column;
+    }
+
+    .inv-detail-actions a {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .inv-notice,
+    .inv-detail-hero {
+        animation: none;
+    }
+}
+
+
+/* ========================================
+   SMARTRESTAURANT - EDICIÓN DE INVENTARIO
+======================================== */
+
+.inv-edit-page .inv-panel {
+    margin-bottom: 20px;
+}
+
+.inv-edit-stock-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    margin-top: 24px;
+    padding: 17px 18px;
+
+    background: #f8fbff;
+    border: 1px solid #dce8f7;
+    border-radius: 10px;
+}
+
+.inv-edit-stock-summary strong {
+    display: block;
+    color: #294362;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.inv-edit-stock-summary p {
+    margin: 0;
+    color: #7b8da5;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.inv-edit-stock-summary .inv-status-badge {
+    flex-shrink: 0;
+}
+
+.inv-edit-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    margin-top: 25px;
+    padding: 20px 22px;
+
+    background: #fbfcff;
+    border: 1px solid #e2e9f2;
+    border-radius: 12px;
+}
+
+.inv-edit-footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.inv-edit-footer-info strong {
+    color: #29415e;
+    font-size: 13px;
+}
+
+.inv-edit-footer-info span {
+    color: #8593a9;
+    font-size: 11px;
+}
+
+.inv-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.inv-edit-actions .inv-primary-button,
+.inv-edit-actions .inv-secondary-button {
+    min-height: 44px;
+}
+
+@media (max-width: 640px) {
+    .inv-edit-stock-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .inv-edit-footer {
+        align-items: stretch;
+    }
+
+    .inv-edit-actions {
+        flex-direction: column;
+    }
+
+    .inv-edit-actions > * {
+        width: 100%;
+    }
+}
