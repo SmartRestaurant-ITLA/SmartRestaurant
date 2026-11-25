@@ -37,6 +37,18 @@ public class Table
         IsActive = true;
     }
 
+    public void ChangeCapacity(int capacity)
+    {
+        if (capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(capacity),
+                "La capacidad debe ser mayor que cero.");
+        }
+
+        Capacity = capacity;
+    }
+
     public void Deactivate()
     {
         IsActive = false;

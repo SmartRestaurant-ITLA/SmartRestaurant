@@ -1,0 +1,478 @@
+
+/* =========================================
+   SMARTRESTAURANT - COMPONENTES DE MESAS
+   Avisos, diálogos y edición
+========================================= */
+
+/* AVISO DE OPERACIÓN EXITOSA */
+
+.tm-notice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-radius: 11px;
+    padding: 15px 17px;
+    margin-bottom: 23px;
+    animation: tm-notice-in .25s ease-out;
+}
+
+.tm-notice-success {
+    background: #f1fbf5;
+    border: 1px solid #cdebd9;
+    color: #176c43;
+}
+
+.tm-notice-icon {
+    display: grid;
+    place-items: center;
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #d9f3e5;
+    color: #16804a;
+    font-size: 19px;
+    font-weight: 750;
+}
+
+.tm-notice-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tm-notice-content strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #155d3a;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.tm-notice-content p {
+    margin: 0;
+    color: #4d8265;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.tm-notice-close {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    background: transparent;
+    color: #598d70;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 21px;
+}
+
+.tm-notice-close:hover {
+    background: #d9f3e5;
+}
+
+/* =========================================
+   ACCIONES DEL LISTADO
+========================================= */
+
+.tm-list-actions .tm-action-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: #eff5ff;
+    color: #245ddd;
+    border-color: #dce8ff;
+}
+
+.tm-list-actions .tm-action-edit:hover {
+    background: #e3edff;
+    color: #1d4ed8;
+}
+
+.tm-list-actions .tm-list-action-btn {
+    min-height: 35px;
+}
+
+.tm-list-actions .tm-toggle-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+/* =========================================
+   CUADRO DE CONFIRMACIÓN
+========================================= */
+
+.tm-ui-dialog {
+    width: min(440px, calc(100vw - 30px));
+    max-height: calc(100vh - 40px);
+    margin: auto;
+    padding: 0;
+    border: 1px solid #e0e7f0;
+    border-radius: 15px;
+    background: #fff;
+    color: #273b57;
+    box-shadow: 0 28px 80px rgba(19, 37, 68, .22);
+    overflow: auto;
+}
+
+.tm-ui-dialog[open] {
+    animation: tm-dialog-in .2s ease-out;
+}
+
+.tm-ui-dialog::backdrop {
+    background: rgba(16, 30, 55, .48);
+    backdrop-filter: blur(3px);
+}
+
+.tm-ui-dialog-body {
+    padding: 27px;
+}
+
+.tm-dialog-icon {
+    display: grid;
+    place-items: center;
+    width: 49px;
+    height: 49px;
+    border-radius: 13px;
+    font-size: 23px;
+    font-weight: 750;
+    margin-bottom: 18px;
+}
+
+.tm-dialog-icon-warning {
+    background: #fff1eb;
+    color: #d27045;
+}
+
+.tm-dialog-icon-success {
+    background: #e5f7ee;
+    color: #16804d;
+}
+
+.tm-ui-dialog-body h2 {
+    color: #172b4d;
+    font-size: 20px;
+    font-weight: 750;
+    line-height: 1.35;
+    margin: 0 0 10px;
+}
+
+.tm-ui-dialog-body p {
+    color: #74849a;
+    font-size: 13px;
+    line-height: 1.75;
+    margin: 0 0 25px;
+}
+
+.tm-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.tm-dialog-btn {
+    min-height: 43px;
+    padding: 11px 16px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.tm-dialog-btn:hover {
+    transform: translateY(-1px);
+}
+
+.tm-dialog-btn:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.tm-dialog-cancel {
+    background: #fff;
+    color: #566980;
+    border-color: #dce4ef;
+}
+
+.tm-dialog-cancel:hover {
+    background: #f6f8fb;
+}
+
+.tm-dialog-danger {
+    background: #cc5252;
+    color: #fff;
+}
+
+.tm-dialog-danger:hover {
+    background: #b83f3f;
+}
+
+.tm-dialog-primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.tm-dialog-primary:hover {
+    background: #1d4ed8;
+}
+
+/* =========================================
+   MODAL DE DETALLES
+========================================= */
+
+.tm-ui-details-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 22px 24px;
+    border-bottom: 1px solid #e8eef5;
+    background: #fbfcff;
+}
+
+.tm-ui-details-head span {
+    color: #2563eb;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .8px;
+}
+
+.tm-ui-details-head h2 {
+    color: #172b4d;
+    font-size: 20px;
+    font-weight: 750;
+    margin: 7px 0 0;
+}
+
+.tm-ui-close {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: #f1f4f9;
+    border: 1px solid #e0e7f1;
+    border-radius: 8px;
+    color: #65768d;
+    font-size: 21px;
+    cursor: pointer;
+}
+
+.tm-ui-close:hover {
+    background: #e8eef7;
+}
+
+.tm-ui-details-body {
+    padding: 23px 24px;
+}
+
+.tm-ui-table-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 27px 15px;
+    margin-bottom: 15px;
+    background: #f1f6ff;
+    border: 1px solid #dce9ff;
+    border-radius: 11px;
+}
+
+.tm-ui-table-summary span {
+    color: #879bb7;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1px;
+}
+
+.tm-ui-table-summary strong {
+    color: #245ddd;
+    font-size: 27px;
+    font-weight: 750;
+}
+
+.tm-ui-detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 0;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.tm-ui-detail-row span {
+    color: #8290a5;
+    font-size: 12px;
+}
+
+.tm-ui-detail-row strong {
+    color: #293f5c;
+    font-size: 12px;
+    text-align: right;
+}
+
+.tm-ui-details-note {
+    color: #7a8ba2;
+    font-size: 11px;
+    line-height: 1.75;
+    margin: 17px 0;
+}
+
+.tm-ui-full-button {
+    width: 100%;
+}
+
+/* =========================================
+   FORMULARIO DE EDICIÓN
+========================================= */
+
+.tm-edit-page .tm-hero {
+    margin-bottom: 28px;
+}
+
+.tm-edit-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 15px;
+    border: 1px solid #dee6f2;
+    border-radius: 9px;
+    background: #fff;
+    color: #536983;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+    transition: background .2s ease;
+}
+
+.tm-edit-back:hover {
+    color: #2563eb;
+    background: #f4f8ff;
+}
+
+.tm-edit-field {
+    margin-bottom: 25px;
+}
+
+.tm-edit-field:last-child {
+    margin-bottom: 0;
+}
+
+.tm-edit-readonly {
+    background: #f5f7fa !important;
+    color: #697c94 !important;
+    cursor: not-allowed;
+}
+
+.tm-edit-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 22px;
+    padding: 16px;
+    background: #f1f6ff;
+    border: 1px solid #dbe8fc;
+    border-radius: 10px;
+}
+
+.tm-edit-warning strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #25549e;
+    font-size: 12px;
+}
+
+.tm-edit-warning p {
+    margin: 0;
+    color: #567396;
+    font-size: 11px;
+    line-height: 1.75;
+}
+
+.tm-edit-errors {
+    border-radius: 10px;
+    margin-bottom: 22px;
+}
+
+.tm-page .tm-edit-field .input-validation-error {
+    border-color: #d96a6a;
+}
+
+/* =========================================
+   ANIMACIONES Y ACCESIBILIDAD
+========================================= */
+
+@keyframes tm-notice-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes tm-dialog-in {
+    from {
+        opacity: 0;
+        transform: translateY(9px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tm-ui-dialog button:focus-visible,
+.tm-notice button:focus-visible,
+.tm-edit-back:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+    .tm-edit-page .tm-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tm-ui-dialog-body {
+        padding: 22px;
+    }
+
+    .tm-dialog-actions {
+        flex-direction: column-reverse;
+    }
+
+    .tm-dialog-btn {
+        width: 100%;
+    }
+
+    .tm-ui-details-head,
+    .tm-ui-details-body {
+        padding: 18px;
+    }
+
+    .tm-notice {
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tm-ui-dialog,
+    .tm-notice,
+    .tm-dialog-btn {
+        animation: none !important;
+        transition: none !important;
+    }
+}

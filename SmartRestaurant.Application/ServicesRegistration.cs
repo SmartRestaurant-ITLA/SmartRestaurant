@@ -20,6 +20,11 @@ namespace SmartRestaurant.Application
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IDailySaleService, DailySaleService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ITableService, TableService>();
+            services.AddScoped<ITableAvailabilityService, TableAvailabilityService>();
+            services.AddScoped<ICategoryService, CategoryService>();
         }
     }
 }

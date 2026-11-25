@@ -1,0 +1,177 @@
+﻿@model List<SmartRestaurant.Domain.Entities.Category>
+@{
+    ViewData["Title"] = "Categorías";
+
+    var categorias = Model ?? new List<SmartRestaurant.Domain.Entities.Category>();
+    var total = categorias.Count;
+    var activas = categorias.Count(c => c.IsActive);
+    var inactivas = total - activas;
+}
+
+<link rel="stylesheet" href="~/css/reservations.css" asp-append-version="true" />
+
+<section class="sr-page py-4">
+
+    <!-- Encabezado -->
+    <div class="sr-header mb-4">
+        <div>
+            <p class="sr-eyebrow mb-2">SMARTRESTAURANT / CATÁLOGO</p>
+            <h1 class="sr-title">Categorías</h1>
+            <p class="sr-subtitle mb-0">Organiza los productos del menú por categoría.</p>
+        </div>
+
+        <a asp-action="Create" class="btn btn-primary sr-primary-btn">
+            <span aria-hidden="true">＋</span>
+            Nueva categoría
+        </a>
+    </div>
+
+    <!-- Mensaje de confirmación -->
+    @if (TempData["Success"] is string mensaje)
+    {
+        <div class="alert alert-success sr-alert" role="status">@mensaje</div>
+    }
+
+    <!-- Tarjetas de resumen -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Total de categorías</span>
+                    <span class="sr-stat-icon sr-blue">#</span>
+                </div>
+                <h2>@total</h2>
+                <p>Categorías registradas</p>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-4">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Activas</span>
+                    <span class="sr-stat-icon sr-green">✓</span>
+                </div>
+                <h2>@activas</h2>
+                <p>Disponibles para productos</p>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-4">
+            <div class="sr-stat-card">
+                <div class="sr-stat-top">
+                    <span>Inactivas</span>
+                    <span class="sr-stat-icon sr-red">×</span>
+                </div>
+                <h2>@inactivas</h2>
+                <p>Categorías desactivadas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Listado principal -->
+    <div class="sr-card">
+
+        <div class="sr-card-header">
+            <div>
+                <h2>Listado de categorías</h2>
+                <p>Información de las categorías registradas.</p>
+            </div>
+
+            <div class="sr-search">
+                <label for="buscarCategoria" class="visually-hidden">Buscar categoría</label>
+                <input type="search" id="buscarCategoria" class="form-control"
+                       placeholder="Buscar categoría..." autocomplete="off" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table sr-table mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (categorias.Any())
+                    {
+                        @foreach (var categoria in categorias)
+                        {
+                            var estadoClase = categoria.IsActive ? "sr-status-confirmed" : "sr-status-cancelled";
+
+                            <tr class="sr-search-row" data-search="@categoria.Name.ToLowerInvariant()">
+                                <td class="sr-id">#@categoria.Id</td>
+                                <td><span class="sr-client">@categoria.Name</span></td>
+                                <td>
+                                    <span class="sr-status @estadoClase">
+                                        @(categoria.IsActive ? "Activa" : "Inactiva")
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="sr-actions">
+                                        <a asp-action="Details" asp-route-id="@categoria.Id" class="sr-action">Ver</a>
+                                        <a asp-action="Edit" asp-route-id="@categoria.Id" class="sr-action">Editar</a>
+                                        <form asp-action="ToggleActive" asp-route-id="@categoria.Id" method="post" class="d-inline">
+                                            <button type="submit" class="sr-action">
+                                                @(categoria.IsActive ? "Desactivar" : "Activar")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="sr-empty">
+                                <div class="sr-empty-content">
+                                    <h3>No hay categorías registradas</h3>
+                                    <p>Crea una categoría para comenzar a organizar el menú.</p>
+                                    <a asp-action="Create" class="btn btn-outline-primary">Crear categoría</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    <tr id="sinResultados" class="d-none">
+                        <td colspan="4" class="sr-empty">No se encontraron categorías con esa búsqueda.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sr-card-footer">
+            <span>Total registrado: <strong>@total</strong></span>
+        </div>
+    </div>
+
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const buscador = document.getElementById("buscarCategoria");
+            const filas = document.querySelectorAll(".sr-search-row");
+            const sinResultados = document.getElementById("sinResultados");
+
+            if (!buscador) return;
+
+            buscador.addEventListener("input", function () {
+                const texto = buscador.value.trim().toLowerCase();
+                let visibles = 0;
+
+                filas.forEach(function (fila) {
+                    const coincide = (fila.dataset.search || "").includes(texto);
+                    fila.classList.toggle("d-none", !coincide);
+                    if (coincide) visibles++;
+                });
+
+                sinResultados.classList.toggle("d-none", visibles > 0 || filas.length === 0);
+            });
+        });
+    </script>
+}
