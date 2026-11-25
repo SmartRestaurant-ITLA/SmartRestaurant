@@ -1,6 +1,7 @@
-﻿@{
+﻿@model SmartRestaurant.Web.ViewModels.LoginViewModel
+@{
     ViewData["Title"] = "Iniciar Sesión";
-    Layout = "_Layout"; // O un layout vacío si prefieres una pantalla completa para el login
+    Layout = "_Layout";
 }
 
 <div class="container mt-5">
@@ -11,13 +12,19 @@
                     <h3 class="text-center mb-4">SmartRestaurant - Login</h3>
 
                     <form asp-controller="Login" asp-action="Index" method="post">
+                        <input type="hidden" asp-for="ReturnUrl" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
                         <div class="mb-3">
-                            <label for="email" class="form-label">Correo Electrónico</label>
-                            <input type="email" class="form-control" id="email" name="email" required />
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" autocomplete="username" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="password" name="password" required />
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Ingresar</button>
@@ -28,3 +35,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
