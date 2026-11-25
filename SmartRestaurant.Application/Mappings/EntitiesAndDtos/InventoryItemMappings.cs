@@ -24,7 +24,10 @@ public class InventoryItemMappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         // Formulario "Editar" → Entidad existente
+        // El stock NO se cambia al editar: solo cambia con entradas y salidas,
+        // para que cada cambio quede registrado en el historial de movimientos.
         CreateMap<UpdateInventoryItemDto, InventoryItem>()
+            .ForMember(dest => dest.CurrentStock, opt => opt.Ignore())
             .ForMember(dest => dest.IsActive, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());

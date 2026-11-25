@@ -1,0 +1,286 @@
+@model SmartRestaurant.Application.DTOs.Inventory.RegisterInventoryMovementDto
+@using SmartRestaurant.Application.DTOs.Inventory
+@using SmartRestaurant.Domain.Enums
+
+@*
+    Registrar una entrada o salida de inventario.
+    Usa el mismo estilo de las vistas de inventario (inventory.css / inventory-pages.css).
+    El controlador envía en ViewData["Items"] los insumos activos para el selector.
+*@
+
+@{
+    ViewData["Title"] = "Registrar movimiento";
+
+    var items = ViewData["Items"] as IReadOnlyList<InventoryItemDto>
+                ?? new List<InventoryItemDto>();
+
+    var units = Html.GetEnumSelectList<UnitOfMeasure>().ToList();
+
+    string UnitLabel(UnitOfMeasure unit) =>
+        units.FirstOrDefault(u => u.Value == ((int)unit).ToString())?.Text
+        ?? unit.ToString();
+}
+
+<link rel="stylesheet"
+      href="~/css/inventory.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-pages.css"
+      asp-append-version="true" />
+
+<section class="inv-page">
+
+    <div class="inv-breadcrumb">
+        SMARTRESTAURANT / INVENTARIO / MOVIMIENTOS
+    </div>
+
+    <header class="inv-header">
+        <div>
+            <span class="inv-overline">
+                MOVIMIENTOS DE INVENTARIO
+            </span>
+
+            <h1>Registrar entrada o salida</h1>
+
+            <p>
+                Cada movimiento actualiza el stock del insumo
+                y queda guardado en el historial.
+            </p>
+        </div>
+
+        <div class="inv-header-icon" aria-hidden="true">
+            <svg width="28" height="28"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M7 4v16"/>
+                <path d="m3 8 4-4 4 4"/>
+                <path d="M17 20V4"/>
+                <path d="m21 16-4 4-4-4"/>
+            </svg>
+        </div>
+    </header>
+
+    @if (items.Count == 0)
+    {
+        <div class="inv-info">
+            <span class="inv-info-symbol">i</span>
+            <p>
+                No hay insumos activos. Registra un insumo
+                antes de agregar movimientos.
+            </p>
+        </div>
+    }
+    else
+    {
+        <form asp-action="Movement" method="post">
+
+            <div asp-validation-summary="All"
+                 class="alert alert-danger inv-form-error"
+                 role="alert">
+            </div>
+
+            <!-- 01: INSUMO Y TIPO -->
+            <div class="inv-panel">
+
+                <div class="inv-panel-head">
+                    <span class="inv-section-number">01</span>
+
+                    <div>
+                        <h2>Insumo y tipo</h2>
+                        <p>
+                            Elige el insumo y si entra o sale del inventario.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="inv-panel-body">
+                    <div class="row g-4">
+
+                        <div class="col-md-7">
+                            <label asp-for="InventoryItemId" class="inv-label"></label>
+
+                            <select asp-for="InventoryItemId"
+                                    id="movementItem"
+                                    class="form-select inv-input"
+                                    required>
+                                <option value="">Seleccionar insumo</option>
+
+                                @foreach (var item in items)
+                                {
+                                    <option value="@item.Id"
+                                            selected="@(item.Id == Model.InventoryItemId)"
+                                            data-stock="@item.CurrentStock.ToString("N2")"
+                                            data-unit="@UnitLabel(item.Unit)">
+                                        @item.Name
+                                    </option>
+                                }
+                            </select>
+
+                            <span asp-validation-for="InventoryItemId" class="text-danger small"></span>
+
+                            <small class="inv-help" id="movementStock">
+                                Selecciona un insumo para ver su stock actual.
+                            </small>
+                        </div>
+
+                        <div class="col-md-5">
+                            <label asp-for="Type" class="inv-label"></label>
+
+                            <select asp-for="Type"
+                                    asp-items="Html.GetEnumSelectList<InventoryMovementType>()"
+                                    class="form-select inv-input"
+                                    required>
+                                <option value="">Seleccionar tipo</option>
+                            </select>
+
+                            <span asp-validation-for="Type" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 02: CANTIDAD Y FECHA -->
+            <div class="inv-panel">
+
+                <div class="inv-panel-head">
+                    <span class="inv-section-number">02</span>
+
+                    <div>
+                        <h2>Cantidad y fecha</h2>
+                        <p>
+                            Cuánto entra o sale y cuándo ocurrió.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="inv-panel-body">
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label asp-for="Quantity" class="inv-label"></label>
+
+                            <input asp-for="Quantity"
+                                   type="number"
+                                   min="0.001"
+                                   step="0.001"
+                                   class="form-control inv-input"
+                                   required />
+
+                            <span asp-validation-for="Quantity" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="MovementDate" class="inv-label"></label>
+
+                            <input asp-for="MovementDate"
+                                   type="datetime-local"
+                                   asp-format="{0:yyyy-MM-ddTHH:mm}"
+                                   class="form-control inv-input"
+                                   required />
+
+                            <span asp-validation-for="MovementDate" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+
+                    <div class="inv-info mt-4">
+                        <span class="inv-info-symbol">i</span>
+                        <p>
+                            Una salida no puede ser mayor que el stock
+                            disponible: el inventario nunca queda en negativo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 03: REFERENCIA Y OBSERVACIÓN -->
+            <div class="inv-panel">
+
+                <div class="inv-panel-head">
+                    <span class="inv-section-number">03</span>
+
+                    <div>
+                        <h2>Referencia y observación</h2>
+                        <p>
+                            Datos opcionales para identificar el movimiento.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="inv-panel-body">
+                    <div class="row g-4">
+
+                        <div class="col-md-5">
+                            <label asp-for="Reference" class="inv-label"></label>
+
+                            <input asp-for="Reference"
+                                   class="form-control inv-input"
+                                   maxlength="100"
+                                   placeholder="Ej. Factura 0045 o Pedido 12" />
+
+                            <span asp-validation-for="Reference" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-7">
+                            <label asp-for="Observation" class="inv-label"></label>
+
+                            <textarea asp-for="Observation"
+                                      class="form-control inv-input"
+                                      rows="3"
+                                      maxlength="500"
+                                      placeholder="Comentario opcional"></textarea>
+
+                            <span asp-validation-for="Observation" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="inv-form-footer">
+
+                <a asp-action="History" class="inv-secondary-button">
+                    Ver historial
+                </a>
+
+                <button type="submit" class="inv-primary-button">
+                    Registrar movimiento
+                </button>
+
+            </div>
+
+        </form>
+    }
+
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Muestra el stock actual del insumo seleccionado
+        (function () {
+            const select = document.getElementById('movementItem');
+            const info = document.getElementById('movementStock');
+            if (!select || !info) return;
+
+            function showStock() {
+                const option = select.options[select.selectedIndex];
+                if (!option || !option.value) {
+                    info.textContent = 'Selecciona un insumo para ver su stock actual.';
+                    return;
+                }
+                info.textContent = 'Stock actual: ' + option.dataset.stock + ' ' + option.dataset.unit;
+            }
+
+            select.addEventListener('change', showStock);
+            showStock();
+        })();
+    </script>
+}
