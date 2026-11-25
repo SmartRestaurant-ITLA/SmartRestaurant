@@ -24,6 +24,8 @@ namespace SmartRestaurant.Infrastructure.Contexts
 
         public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
 
+        public DbSet<User> Users => Set<User>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
