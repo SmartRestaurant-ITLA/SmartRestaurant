@@ -141,6 +141,86 @@ namespace SmartRestaurant.Infrastructure.Migrations
                     b.ToTable("InventoryItems", (string)null);
                 });
 
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Invoices", (string)null);
+                });
+
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.InvoiceDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("InvoiceDetails", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_InvoiceDetails_Quantity", "[Quantity] > 0");
+
+                            t.HasCheckConstraint("CK_InvoiceDetails_UnitPrice", "[UnitPrice] > 0");
+                        });
+                });
+
             modelBuilder.Entity("SmartRestaurant.Domain.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -205,6 +285,41 @@ namespace SmartRestaurant.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_OrderDetails_Quantity", "[Quantity] > 0");
 
                             t.HasCheckConstraint("CK_OrderDetails_UnitPrice", "[UnitPrice] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Method")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("Payments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
                         });
                 });
 
@@ -309,6 +424,24 @@ namespace SmartRestaurant.Infrastructure.Migrations
                     b.ToTable("Tables", (string)null);
                 });
 
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.Invoice", b =>
+                {
+                    b.HasOne("SmartRestaurant.Domain.Entities.Order", null)
+                        .WithOne()
+                        .HasForeignKey("SmartRestaurant.Domain.Entities.Invoice", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.InvoiceDetail", b =>
+                {
+                    b.HasOne("SmartRestaurant.Domain.Entities.Invoice", null)
+                        .WithMany("Details")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SmartRestaurant.Domain.Entities.Order", b =>
                 {
                     b.HasOne("SmartRestaurant.Domain.Entities.Table", null)
@@ -333,12 +466,28 @@ namespace SmartRestaurant.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.Payment", b =>
+                {
+                    b.HasOne("SmartRestaurant.Domain.Entities.Invoice", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SmartRestaurant.Domain.Entities.Product", b =>
                 {
                     b.HasOne("SmartRestaurant.Domain.Entities.Category", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.Invoice", b =>
+                {
+                    b.Navigation("Details");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("SmartRestaurant.Domain.Entities.Order", b =>
