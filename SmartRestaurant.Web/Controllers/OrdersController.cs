@@ -8,8 +8,7 @@ using SmartRestaurant.Application.Interfaces.Services;
 using SmartRestaurant.Application.Services;
 using SmartRestaurant.Domain.Enums;
 using SmartRestaurant.Web.ViewModels;
-/*Cambio 2: using nuevo*/
-using SmartRestaurant.Application.DTOs.Products;
+
 
 namespace SmartRestaurant.Web.Controllers;
 
