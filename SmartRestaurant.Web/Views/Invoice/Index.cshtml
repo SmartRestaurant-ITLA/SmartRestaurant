@@ -1,0 +1,77 @@
+@model SmartRestaurant.Web.ViewModels.InvoiceIndexViewModel
+@{
+    ViewData["Title"] = "Facturación";
+
+    string GetStatusLabel(SmartRestaurant.Domain.Enums.InvoiceStatus status) => status switch
+    {
+        SmartRestaurant.Domain.Enums.InvoiceStatus.Issued => "Emitida",
+        SmartRestaurant.Domain.Enums.InvoiceStatus.PartiallyPaid => "Pago parcial",
+        SmartRestaurant.Domain.Enums.InvoiceStatus.Paid => "Pagada",
+        SmartRestaurant.Domain.Enums.InvoiceStatus.Cancelled => "Cancelada",
+        _ => status.ToString()
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Facturación y pagos</h1>
+        <p class="text-muted mb-0">Consulta facturas, pagos y balances pendientes.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">Nueva factura</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success" role="status">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+
+@if (Model.Invoices.Count == 0)
+{
+    <div class="alert alert-light border">
+        Aún no hay facturas registradas.
+        <a asp-action="Create">Crear una factura para un pedido servido</a>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Factura</th>
+                        <th>Pedido</th>
+                        <th>Emisión</th>
+                        <th>Estado</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Pagado</th>
+                        <th class="text-end">Balance</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var invoice in Model.Invoices)
+                    {
+                        <tr>
+                            <td>@invoice.InvoiceNumber</td>
+                            <td>#@invoice.OrderId</td>
+                            <td>@invoice.IssuedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@GetStatusLabel(invoice.Status)</td>
+                            <td class="text-end">RD$ @invoice.Total.ToString("N2")</td>
+                            <td class="text-end">RD$ @invoice.AmountPaid.ToString("N2")</td>
+                            <td class="text-end">RD$ @invoice.Balance.ToString("N2")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@invoice.Id"
+                                   class="btn btn-sm btn-outline-primary">Detalles</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
