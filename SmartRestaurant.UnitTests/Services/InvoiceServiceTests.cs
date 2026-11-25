@@ -382,6 +382,10 @@ public class InvoiceServiceTests
             CancellationToken ct = default) =>
             Task.FromResult(false);
 
+        public Task<IReadOnlyCollection<int>> GetOpenOrderTableIdsAsync(
+    CancellationToken ct = default) =>
+    Task.FromResult<IReadOnlyCollection<int>>(Array.Empty<int>());    
+
         public Task AddAsync(Order order, CancellationToken ct = default) =>
             Task.CompletedTask;
 
