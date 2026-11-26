@@ -19,26 +19,44 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @{
+                        // Menú según roles (César). Sin sesión iniciada se muestra todo, como antes.
+                        var autenticado = User.Identity?.IsAuthenticated == true;
+                        bool Puede(params string[] roles) =>
+                        !autenticado || User.IsInRole("Administrador") || roles.Any(rol => User.IsInRole(rol));
+                    }
                     <ul class="navbar-nav flex-grow-1">
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Index">Login</a>
-                        </li>
-                        
-                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Inventory" asp-action="Index">Inventario</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Sales" asp-action="Index">Ventas</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Pedidos</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Productos</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Tables" asp-action="Index">Mesas</a></li>
-                        <li>
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Reservations" asp-action="Index">Reservas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">Categorías</a>
-                        </li>
-                       
+                        @if (Puede("Cajero"))
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+                        }
+                        @if (Puede())
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Inventory" asp-action="Index">Inventario</a></li>
+                        }
+                        @if (Puede("Cajero"))
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Sales" asp-action="Index">Ventas</a></li>
+                        }
+                        @if (Puede("Mesero", "Cajero"))
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Pedidos</a></li>
+                        }
+                        @if (Puede())
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Productos</a></li>
+                        }
+                        @if (Puede("Mesero"))
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Tables" asp-action="Index">Mesas</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Reservations" asp-action="Index">Reservas</a></li>
+                        }
+                        @if (Puede())
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">Categorías</a></li>
+                        }
                     </ul>
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
