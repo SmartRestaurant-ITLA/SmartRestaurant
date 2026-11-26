@@ -1,0 +1,257 @@
+@model IReadOnlyList<SmartRestaurant.Application.DTOs.Inventory.InventoryMovementDto>
+@using SmartRestaurant.Application.DTOs.Inventory
+@using SmartRestaurant.Domain.Enums
+
+@*
+    Historial de movimientos de inventario (entradas y salidas).
+    Usa el mismo estilo del listado de inventario (inventory-list.css).
+    Los filtros se envían por GET al servidor: insumo, tipo y rango de fechas.
+*@
+
+@{
+    ViewData["Title"] = "Historial de movimientos";
+
+    var items = ViewData["Items"] as IReadOnlyList<InventoryItemDto>
+                ?? new List<InventoryItemDto>();
+
+    var selectedItemId = ViewData["InventoryItemId"] as int?;
+    var selectedType = ViewData["Type"] as InventoryMovementType?;
+    var from = ViewData["From"] as DateTime?;
+    var to = ViewData["To"] as DateTime?;
+
+    var units = Html.GetEnumSelectList<UnitOfMeasure>().ToList();
+
+    string UnitLabel(UnitOfMeasure unit) =>
+        units.FirstOrDefault(u => u.Value == ((int)unit).ToString())?.Text
+        ?? unit.ToString();
+
+    var entries = Model.Count(m => m.Type == InventoryMovementType.Entry);
+    var exits = Model.Count(m => m.Type == InventoryMovementType.Exit);
+}
+
+<link rel="stylesheet"
+      href="~/css/inventory.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-pages.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/inventory-list.css"
+      asp-append-version="true" />
+
+<section class="inv-page inv-list-page">
+
+    <div class="inv-breadcrumb">
+        SMARTRESTAURANT / INVENTARIO / MOVIMIENTOS
+    </div>
+
+    <header class="inv-list-header">
+
+        <div>
+            <span class="inv-overline">
+                TRAZABILIDAD DEL STOCK
+            </span>
+
+            <h1>Historial de movimientos</h1>
+
+            <p>
+                Consulta las entradas y salidas de cada insumo
+                y el stock que quedó después de cada una.
+            </p>
+        </div>
+
+        <a asp-action="Movement"
+           asp-route-id="@selectedItemId"
+           class="inv-primary-button">
+            <span aria-hidden="true">+</span>
+            Registrar movimiento
+        </a>
+
+    </header>
+
+    <div class="inv-l-panel">
+
+        <div class="inv-l-panel-header">
+
+            <div>
+                <h2>Movimientos</h2>
+                <p>
+                    @entries entradas y @exits salidas en el resultado.
+                </p>
+            </div>
+
+            <span class="inv-l-count">
+                @Model.Count registros
+            </span>
+
+        </div>
+
+        <!-- FILTROS (se aplican en el servidor) -->
+
+        <form asp-action="History" method="get" class="inv-l-toolbar">
+
+            <div class="inv-l-filter">
+                <label for="historyItem">Insumo</label>
+
+                <select id="historyItem" name="inventoryItemId">
+                    <option value="">Todos los insumos</option>
+
+                    @foreach (var item in items)
+                    {
+                        <option value="@item.Id" selected="@(item.Id == selectedItemId)">
+                            @item.Name@(item.IsActive ? "" : " (inactivo)")
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="inv-l-filter">
+                <label for="historyType">Tipo</label>
+
+                <select id="historyType" name="type">
+                    <option value="">Entradas y salidas</option>
+                    <option value="Entry" selected="@(selectedType == InventoryMovementType.Entry)">Entradas</option>
+                    <option value="Exit" selected="@(selectedType == InventoryMovementType.Exit)">Salidas</option>
+                </select>
+            </div>
+
+            <div class="inv-l-filter">
+                <label for="historyFrom">Desde</label>
+                <input type="date" id="historyFrom" name="from" value="@from?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="inv-l-filter">
+                <label for="historyTo">Hasta</label>
+                <input type="date" id="historyTo" name="to" value="@to?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <button type="submit" class="inv-primary-button">
+                Filtrar
+            </button>
+
+            <a asp-action="History" class="inv-l-clear">
+                Limpiar filtros
+            </a>
+
+        </form>
+
+        <!-- TABLA -->
+
+        @if (Model.Count == 0)
+        {
+            <div class="inv-l-empty">
+
+                <span class="inv-l-empty-icon" aria-hidden="true">▣</span>
+
+                <h3>No hay movimientos para mostrar</h3>
+
+                <p>
+                    Todavía no se han registrado entradas o salidas,
+                    o ninguna coincide con los filtros.
+                </p>
+
+            </div>
+        }
+        else
+        {
+            <div class="inv-l-table-wrap">
+
+                <table class="inv-l-table">
+
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Insumo</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Stock después</th>
+                            <th>Referencia / observación</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var m in Model)
+                        {
+                            var unit = UnitLabel(m.Unit);
+
+                            <tr>
+
+                                <td>
+                                    <div class="inv-l-quantity">
+                                        <strong>@m.MovementDate.ToString("dd/MM/yyyy")</strong>
+                                        <small>@m.MovementDate.ToString("HH:mm")</small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="inv-l-product">
+                                        <div>
+                                            <strong>
+                                                <a asp-action="Details" asp-route-id="@m.InventoryItemId">
+                                                    @m.InventoryItemName
+                                                </a>
+                                            </strong>
+                                            <small>ID #@m.InventoryItemId</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @if (m.Type == InventoryMovementType.Entry)
+                                    {
+                                        <span class="inv-status-badge inv-status-active">Entrada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inv-status-badge inv-status-warning">Salida</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="inv-l-quantity">
+                                        <strong>
+                                            @(m.Type == InventoryMovementType.Entry ? "+" : "−")@m.Quantity.ToString("N2")
+                                        </strong>
+                                        <span>@unit</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="inv-l-quantity">
+                                        <strong>@m.StockAfter.ToString("N2")</strong>
+                                        <span>@unit</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="inv-l-quantity">
+                                        <strong>@(m.Reference ?? "—")</strong>
+                                        @if (!string.IsNullOrWhiteSpace(m.Observation))
+                                        {
+                                            <small>@m.Observation</small>
+                                        }
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+    <div class="inv-detail-actions">
+        <a asp-action="Index" class="inv-secondary-button">
+            Volver al inventario
+        </a>
+    </div>
+
+</section>

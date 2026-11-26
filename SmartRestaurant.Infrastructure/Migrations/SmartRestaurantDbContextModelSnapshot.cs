@@ -141,6 +141,54 @@ namespace SmartRestaurant.Infrastructure.Migrations
                     b.ToTable("InventoryItems", (string)null);
                 });
 
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.InventoryMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InventoryItemId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("MovementDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Observation")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("StockAfter")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryItemId", "MovementDate");
+
+                    b.ToTable("InventoryMovements", (string)null);
+                });
+
             modelBuilder.Entity("SmartRestaurant.Domain.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -307,6 +355,17 @@ namespace SmartRestaurant.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Tables", (string)null);
+                });
+
+            modelBuilder.Entity("SmartRestaurant.Domain.Entities.InventoryMovement", b =>
+                {
+                    b.HasOne("SmartRestaurant.Domain.Entities.InventoryItem", "InventoryItem")
+                        .WithMany()
+                        .HasForeignKey("InventoryItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InventoryItem");
                 });
 
             modelBuilder.Entity("SmartRestaurant.Domain.Entities.Order", b =>
